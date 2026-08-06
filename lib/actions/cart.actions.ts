@@ -2,7 +2,11 @@
 
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { getOrCreateCartSessionId, getCartSessionId } from "@/lib/cart-session";
+import {
+  getOrCreateCartSessionId,
+  getCartSessionId,
+  clearCartSessionId,
+} from "@/lib/cart-session";
 import { z } from "zod";
 
 /**
@@ -272,4 +276,84 @@ async function verifyCartOwnership(cart: {
 
   const sessionId = await getCartSessionId();
   return sessionId !== null && cart.sessionId === sessionId;
+}
+
+/**
+ * Merges a guest's cart (identified by the cart_session cookie) into
+ * the logged-in user's cart. Called right after successful login/signup.
+ *
+ * - If the user has no cart yet, the guest cart is simply reassigned to them.
+ * - If the user already has a cart, guest items are merged in
+ *   (quantities combined for matching product+variant+design), and the
+ *   now-empty guest cart is deleted.
+ * - Clears the guest session cookie afterward either way.
+ */
+export async function mergeGuestCartWithUserCart(userId: string) {
+  const sessionId = await getCartSessionId();
+
+  if (!sessionId) {
+    // No guest cart to merge — nothing to do.
+    return { success: true, merged: false };
+  }
+
+  const guestCart = await prisma.cart.findUnique({
+    where: { sessionId },
+    include: { items: true },
+  });
+
+  if (!guestCart || guestCart.items.length === 0) {
+    await clearCartSessionId();
+    return { success: true, merged: false };
+  }
+
+  const userCart = await prisma.cart.findUnique({
+    where: { userId },
+  });
+
+  if (!userCart) {
+    // User has no cart yet — just reassign the guest cart to them.
+    await prisma.cart.update({
+      where: { id: guestCart.id },
+      data: { userId, sessionId: null },
+    });
+    await clearCartSessionId();
+    return { success: true, merged: true };
+  }
+
+  // User already has a cart — merge items one by one.
+  for (const guestItem of guestCart.items) {
+    const existingItem = await prisma.cartItem.findFirst({
+      where: {
+        cartId: userCart.id,
+        productId: guestItem.productId,
+        variantId: guestItem.variantId,
+        designId: guestItem.designId ?? null,
+      },
+    });
+
+    if (existingItem) {
+      await prisma.cartItem.update({
+        where: { id: existingItem.id },
+        data: { quantity: existingItem.quantity + guestItem.quantity },
+      });
+    } else {
+      await prisma.cartItem.create({
+        data: {
+          cartId: userCart.id,
+          productId: guestItem.productId,
+          variantId: guestItem.variantId,
+          designId: guestItem.designId,
+          quantity: guestItem.quantity,
+          specialInstructions: guestItem.specialInstructions,
+        },
+      });
+    }
+  }
+
+  // Guest cart is now redundant — delete it (CartItems cascade-delete automatically).
+  await prisma.cart.delete({ where: { id: guestCart.id } });
+
+  await clearCartSessionId();
+
+  return { success: true, merged: true };
 }
