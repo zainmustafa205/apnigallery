@@ -182,3 +182,94 @@ async function getOrCreateCart() {
     data: { sessionId },
   });
 }
+
+const updateQuantitySchema = z.object({
+  cartItemId: z.string().cuid(),
+  quantity: z.number().int().positive().max(50),
+});
+
+/**
+ * Updates the quantity of a cart item, after verifying it belongs
+ * to the current user's (or guest's) own cart — prevents editing
+ * someone else's cart by guessing/passing a cartItemId.
+ */
+export async function updateCartItemQuantity(cartItemId: string, quantity: number) {
+  const parsed = updateQuantitySchema.safeParse({ cartItemId, quantity });
+  if (!parsed.success) {
+    return { success: false, error: "Invalid input" };
+  }
+
+  const cartItem = await prisma.cartItem.findUnique({
+    where: { id: cartItemId },
+    include: {
+      cart: true,
+      variant: { select: { stock: true, isActive: true } },
+    },
+  });
+
+  if (!cartItem) {
+    return { success: false, error: "Cart item not found" };
+  }
+
+  const ownsCart = await verifyCartOwnership(cartItem.cart);
+  if (!ownsCart) {
+    return { success: false, error: "Not authorized to modify this cart item" };
+  }
+
+  if (!cartItem.variant.isActive) {
+    return { success: false, error: "This variant is no longer available" };
+  }
+
+  if (cartItem.variant.stock < quantity) {
+    return { success: false, error: `Only ${cartItem.variant.stock} in stock` };
+  }
+
+  const updated = await prisma.cartItem.update({
+    where: { id: cartItemId },
+    data: { quantity },
+  });
+
+  return { success: true, cartItem: updated };
+}
+
+/**
+ * Removes a cart item, after verifying ownership (same check as above).
+ */
+export async function removeCartItem(cartItemId: string) {
+  const cartItem = await prisma.cartItem.findUnique({
+    where: { id: cartItemId },
+    include: { cart: true },
+  });
+
+  if (!cartItem) {
+    return { success: false, error: "Cart item not found" };
+  }
+
+  const ownsCart = await verifyCartOwnership(cartItem.cart);
+  if (!ownsCart) {
+    return { success: false, error: "Not authorized to modify this cart item" };
+  }
+
+  await prisma.cartItem.delete({ where: { id: cartItemId } });
+
+  return { success: true };
+}
+
+/**
+ * Checks whether the currently logged-in user (or guest session)
+ * owns the given cart — used to prevent editing/removing another
+ * person's cart items.
+ */
+async function verifyCartOwnership(cart: {
+  userId: string | null;
+  sessionId: string | null;
+}) {
+  const session = await auth();
+
+  if (session?.user?.id) {
+    return cart.userId === session.user.id;
+  }
+
+  const sessionId = await getCartSessionId();
+  return sessionId !== null && cart.sessionId === sessionId;
+}
