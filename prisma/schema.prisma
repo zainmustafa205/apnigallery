@@ -259,14 +259,13 @@ model Design {
 
 model Cart {
   id        String   @id @default(cuid())
-  userId    String?
+  userId    String?  @unique
   user      User?    @relation(fields: [userId], references: [id])
   sessionId String?  @unique
   updatedAt DateTime @updatedAt
 
   items CartItem[]
 
-  @@index([userId])
   @@map("carts")
 }
 
