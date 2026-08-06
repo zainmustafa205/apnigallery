@@ -2,7 +2,8 @@
 
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { getCartSessionId } from "@/lib/cart-session";
+import { getOrCreateCartSessionId, getCartSessionId } from "@/lib/cart-session";
+import { z } from "zod";
 
 /**
  * Fetches the current user's cart (logged-in via userId, or guest via sessionId cookie),
@@ -75,3 +76,109 @@ const cartIncludeOptions = {
     },
   },
 } as const;
+
+const addToCartSchema = z.object({
+  productId: z.string().cuid(),
+  variantId: z.string().cuid(),
+  quantity: z.number().int().positive().max(50),
+  designId: z.string().cuid().optional(),
+  specialInstructions: z.string().max(500).optional(),
+});
+
+type AddToCartInput = z.infer<typeof addToCartSchema>;
+
+/**
+ * Adds a product+variant (with optional design) to the current user's cart.
+ * Works for both logged-in users and guests (creating a cart if one doesn't exist yet).
+ * If the same product+variant+design combination already exists in the cart,
+ * increases its quantity instead of creating a duplicate row.
+ */
+export async function addToCart(input: AddToCartInput) {
+  const parsed = addToCartSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false, error: "Invalid input", details: parsed.error.flatten() };
+  }
+
+  const { productId, variantId, quantity, designId, specialInstructions } = parsed.data;
+
+  // Validate variant is orderable
+  const variant = await prisma.productVariant.findUnique({
+    where: { id: variantId },
+    select: { id: true, productId: true, isActive: true, stock: true },
+  });
+
+  if (!variant || variant.productId !== productId) {
+    return { success: false, error: "Variant not found for this product" };
+  }
+
+  if (!variant.isActive) {
+    return { success: false, error: "This variant is no longer available" };
+  }
+
+  if (variant.stock < quantity) {
+    return { success: false, error: `Only ${variant.stock} in stock` };
+  }
+
+  const cart = await getOrCreateCart();
+
+  // Check if this exact product+variant+design combo is already in the cart
+  const existingItem = await prisma.cartItem.findFirst({
+    where: {
+      cartId: cart.id,
+      productId,
+      variantId,
+      designId: designId ?? null,
+    },
+  });
+
+  if (existingItem) {
+    const updated = await prisma.cartItem.update({
+      where: { id: existingItem.id },
+      data: { quantity: existingItem.quantity + quantity },
+    });
+    return { success: true, cartItem: updated };
+  }
+
+  const newItem = await prisma.cartItem.create({
+    data: {
+      cartId: cart.id,
+      productId,
+      variantId,
+      designId,
+      quantity,
+      specialInstructions,
+    },
+  });
+
+  return { success: true, cartItem: newItem };
+}
+
+/**
+ * Gets the current cart, or creates one if none exists —
+ * linked to userId (logged-in) or sessionId (guest).
+ */
+async function getOrCreateCart() {
+  const session = await auth();
+
+  if (session?.user?.id) {
+    const existing = await prisma.cart.findUnique({
+      where: { userId: session.user.id },
+    });
+    if (existing) return existing;
+
+    return prisma.cart.create({
+      data: { userId: session.user.id },
+    });
+  }
+
+  // Guest flow
+  const sessionId = await getOrCreateCartSessionId();
+  const existing = await prisma.cart.findUnique({
+    where: { sessionId },
+  });
+  if (existing) return existing;
+
+  return prisma.cart.create({
+    data: { sessionId },
+  });
+}
