@@ -3,6 +3,7 @@ import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import prisma from "./prisma";
 import { authConfig } from "./auth.config";
+import { mergeGuestCartWithUserCart } from "@/lib/actions/cart.actions";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -81,6 +82,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
       }
       return true;
+    },
+  },
+  events: {
+    async signIn({ user }) {
+      if (!user.id) return;
+
+      try {
+        await mergeGuestCartWithUserCart(user.id);
+      } catch (error) {
+        console.error("Guest cart merge failed:", error);
+      }
     },
   },
 });
