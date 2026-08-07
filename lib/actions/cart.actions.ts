@@ -22,7 +22,28 @@ export async function getCart() {
     ? await getCartByUserId(session.user.id)
     : await getCartBySessionId();
 
-  return cart;
+  return serializeCart(cart);
+}
+
+// Converts Prisma Decimal fields to plain numbers so the data
+// can safely cross the Server → Client Component boundary.
+function serializeCart(cart: Awaited<ReturnType<typeof getCartByUserId>>) {
+  if (!cart) return null;
+
+  return {
+    ...cart,
+    items: cart.items.map((item) => ({
+      ...item,
+      product: {
+        ...item.product,
+        basePrice: item.product.basePrice.toNumber(),
+      },
+      variant: {
+        ...item.variant,
+        priceAdjustment: item.variant.priceAdjustment.toNumber(),
+      },
+    })),
+  };
 }
 
 async function getCartByUserId(userId: string) {
