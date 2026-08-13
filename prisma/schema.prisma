@@ -122,21 +122,23 @@ model User {
 }
 
 model Address {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  label       String?
-  addressLine String
-  city        String
-  province    String
-  postalCode  String?
-  phone       String
-  isDefault   Boolean  @default(false)
-  createdAt   DateTime @default(now())
+  id             String   @id @default(cuid())
+  userId         String?
+  user           User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  guestSessionId String?
+  label          String?
+  addressLine    String
+  city           String
+  province       String
+  postalCode     String?
+  phone          String
+  isDefault      Boolean  @default(false)
+  createdAt      DateTime @default(now())
 
   orders Order[]
 
   @@index([userId])
+  @@index([guestSessionId])
   @@map("addresses")
 }
 
