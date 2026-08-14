@@ -40,6 +40,7 @@ interface OrderResult {
   success: boolean;
   error?: string;
   data?: {
+    orderId: string;
     orderNumber: string;
     trackingCode: string;
     subtotal: string;
@@ -206,6 +207,7 @@ async function buildOrder(
   return {
     success: true,
     data: {
+      orderId: order.id,
       orderNumber: order.orderNumber,
       trackingCode: order.trackingCode,
       subtotal: subtotal.toString(),
