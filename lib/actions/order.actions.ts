@@ -3,7 +3,7 @@
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { getCart } from "@/lib/actions/cart.actions";
-import { getCartSessionId as getGuestSessionId } from "@/lib/cart-session";
+import { getOrCreateCartSessionId as getGuestSessionId } from "@/lib/cart-session";
 import {
   getAdvancePercentage,
   generateOrderNumber,
