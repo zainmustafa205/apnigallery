@@ -206,3 +206,49 @@ export async function deleteDesign(designId: string) {
     return { success: false as const, error: "Could not delete design." };
   }
 }
+
+type SavePreviewSnapshotResult =
+  | { success: true; data: { previewImageUrl: string } }
+  | { success: false; error: string };
+
+export async function savePreviewSnapshot(
+  designId: string,
+  dataUri: string // e.g. "data:image/png;base64,...."
+): Promise<SavePreviewSnapshotResult> {
+  if (!dataUri.startsWith("data:image/")) {
+    return { success: false, error: "Invalid image data." };
+  }
+
+  const design = await prisma.design.findUnique({
+    where: { id: designId },
+    select: { id: true, previewImagePublicId: true },
+  });
+
+  if (!design) {
+    return { success: false, error: "Design not found." };
+  }
+
+  try {
+    // Purani preview image (agar hai) cleanup — regenerate ka case
+    if (design.previewImagePublicId) {
+      await cloudinary.uploader.destroy(design.previewImagePublicId);
+    }
+
+    const uploadResult = await cloudinary.uploader.upload(dataUri, {
+      folder: "design-previews",
+    });
+
+    await prisma.design.update({
+      where: { id: designId },
+      data: {
+        previewImageUrl: uploadResult.secure_url,
+        previewImagePublicId: uploadResult.public_id,
+      },
+    });
+
+    return { success: true, data: { previewImageUrl: uploadResult.secure_url } };
+  } catch (error) {
+    console.error("Save preview snapshot failed:", error);
+    return { success: false, error: "Could not save preview snapshot." };
+  }
+}
