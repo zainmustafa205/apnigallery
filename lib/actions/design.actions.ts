@@ -166,3 +166,43 @@ export async function saveDesign(input: SaveDesignInput): Promise<SaveDesignResu
     return { success: false, error: "Could not save design. Please try again." };
   }
 }
+
+export async function getDesign(designId: string) {
+  const design = await prisma.design.findUnique({
+    where: { id: designId },
+  });
+
+  if (!design) {
+    return { success: false as const, error: "Design not found." };
+  }
+
+  return { success: true as const, data: design };
+}
+
+export async function deleteDesign(designId: string) {
+  const design = await prisma.design.findUnique({
+    where: { id: designId },
+    select: { id: true, uploadedImagePublicId: true, previewImagePublicId: true },
+  });
+
+  if (!design) {
+    return { success: false as const, error: "Design not found." };
+  }
+
+  try {
+    // Cloudinary cleanup — dono images agar mojood hon
+    if (design.uploadedImagePublicId) {
+      await cloudinary.uploader.destroy(design.uploadedImagePublicId);
+    }
+    if (design.previewImagePublicId) {
+      await cloudinary.uploader.destroy(design.previewImagePublicId);
+    }
+
+    await prisma.design.delete({ where: { id: designId } });
+
+    return { success: true as const };
+  } catch (error) {
+    console.error("Delete design failed:", error);
+    return { success: false as const, error: "Could not delete design." };
+  }
+}
