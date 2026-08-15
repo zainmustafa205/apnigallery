@@ -1,6 +1,8 @@
 "use server";
 
 import cloudinary from "@/lib/cloudinary";
+import prisma from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/jpg"];
 const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
@@ -74,5 +76,93 @@ export async function uploadDesignImage(
   } catch (error) {
     console.error("Cloudinary design upload failed:", error);
     return { success: false, error: "Upload failed. Please try again." };
+  }
+}
+
+type OverlayPosition = {
+  x: number;
+  y: number;
+  scale: number;
+  rotation: number;
+};
+
+type SaveDesignInput = {
+  designId?: string; // agar diya gaya -> update, warna -> create
+  productId: string;
+  uploadedImageUrl?: string;
+  uploadedImagePublicId?: string;
+  textContent?: string;
+  fontFamily?: string;
+  textColor?: string;
+  overlayPosition?: OverlayPosition;
+};
+
+type SaveDesignResult =
+  { success: true; data: { designId: string } } | { success: false; error: string };
+
+export async function saveDesign(input: SaveDesignInput): Promise<SaveDesignResult> {
+  const { designId, productId } = input;
+
+  // --- Validate product exists ---
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+    select: { id: true },
+  });
+
+  if (!product) {
+    return { success: false, error: "Invalid product." };
+  }
+
+  // --- Get logged-in user (if any) ---
+  const session = await auth();
+  const userId = session?.user?.id ?? null;
+
+  const designData = {
+    productId,
+    uploadedImageUrl: input.uploadedImageUrl,
+    uploadedImagePublicId: input.uploadedImagePublicId,
+    textContent: input.textContent,
+    fontFamily: input.fontFamily,
+    textColor: input.textColor,
+    overlayPosition: input.overlayPosition,
+  };
+
+  try {
+    if (designId) {
+      // --- Update existing design ---
+      const existing = await prisma.design.findUnique({
+        where: { id: designId },
+        select: { id: true, userId: true },
+      });
+
+      if (!existing) {
+        return { success: false, error: "Design not found." };
+      }
+
+      // Agar design kisi logged-in user ka hai, sirf wahi user update kr sake
+      if (existing.userId && existing.userId !== userId) {
+        return { success: false, error: "Not authorized to edit this design." };
+      }
+
+      const updated = await prisma.design.update({
+        where: { id: designId },
+        data: designData,
+      });
+
+      return { success: true, data: { designId: updated.id } };
+    } else {
+      // --- Create new design ---
+      const created = await prisma.design.create({
+        data: {
+          ...designData,
+          userId,
+        },
+      });
+
+      return { success: true, data: { designId: created.id } };
+    }
+  } catch (error) {
+    console.error("Save design failed:", error);
+    return { success: false, error: "Could not save design. Please try again." };
   }
 }
