@@ -1,22 +1,23 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Noto_Nastaliq_Urdu } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/providers/Providers";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-sans",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const notoNastaliq = Noto_Nastaliq_Urdu({
+  variable: "--font-urdu",
+  subsets: ["arabic"],
+  weight: ["400", "700"],
 });
 
 export const metadata: Metadata = {
   title: {
-    default: "Custom Printing Store",
-    template: "%s | Custom Printing Store",
+    default: "ApniGallery — Custom Printing Store",
+    template: "%s | ApniGallery",
   },
   description:
     "Custom-printed mugs, shirts, bags & more — upload your design and order online.",
@@ -30,7 +31,8 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
+      className={`${inter.variable} ${notoNastaliq.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
         <Providers>{children}</Providers>
