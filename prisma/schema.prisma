@@ -175,6 +175,7 @@ model Product {
   basePrice        Decimal       @db.Decimal(10, 2)
   isCustomizable   Boolean       @default(true)
   isBulkAvailable  Boolean       @default(false)
+  isFeatured       Boolean       @default(false)
   status           ProductStatus @default(DRAFT)
   seoTitle         String?
   seoDescription   String?
