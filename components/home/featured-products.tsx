@@ -41,10 +41,12 @@ export async function FeaturedProducts() {
       <h2 className="mb-6 text-center text-2xl font-bold text-[var(--color-primary)] sm:text-3xl">
         ہماری مقبول مصنوعات
       </h2>
-      <div className="-mx-4 flex justify-center gap-4 overflow-x-auto px-4 pb-3 sm:gap-5">
-        {cards.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
+      <div className="-mx-4 overflow-x-auto px-4 pb-3">
+        <div className="mx-auto flex w-fit gap-4 sm:gap-5">
+          {cards.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
       </div>
     </section>
   );
