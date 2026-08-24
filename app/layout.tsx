@@ -3,15 +3,20 @@ import { Inter, Noto_Nastaliq_Urdu } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/providers/Providers";
 
-const inter = Inter({
-  variable: "--font-sans",
-  subsets: ["latin"],
-});
+import { Gulzar } from "next/font/google";
+
+const inter = Inter({ variable: "--font-sans", subsets: ["latin"] });
 
 const notoNastaliq = Noto_Nastaliq_Urdu({
   variable: "--font-urdu",
   subsets: ["arabic"],
   weight: ["400", "700"],
+});
+
+const gulzar = Gulzar({
+  variable: "--font-heading-ur",
+  subsets: ["arabic"],
+  weight: "400",
 });
 
 export const metadata: Metadata = {
@@ -32,7 +37,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${inter.variable} ${notoNastaliq.variable} h-full antialiased`}
+      className={`${inter.variable} ${notoNastaliq.variable} ${gulzar.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
         <Providers>{children}</Providers>
