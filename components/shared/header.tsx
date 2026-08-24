@@ -42,8 +42,21 @@ export function Header() {
               <Gift size={20} />
             </span>
             <span className="flex flex-col">
-              <span className="[animation:gradient-shift_4s_ease_infinite] bg-gradient-to-r from-[var(--color-primary)] via-[var(--color-accent)] to-[var(--color-primary)] bg-[length:200%_auto] bg-clip-text text-lg font-extrabold text-transparent sm:text-xl">
-                ApniGallery.com
+              <span className="logo-bounce relative inline-block pl-0.5">
+                {/* Base layer — solid colors */}
+                <span className="text-[19px] font-extrabold sm:text-[22px]">
+                  <span className="text-[var(--color-primary)]">Apni</span>
+                  <span className="text-[var(--color-accent)]">Gallery</span>
+                  <span className="text-[var(--color-primary)]">.com</span>
+                </span>
+
+                {/* Shine layer — exact duplicate, clipped to letter shapes only */}
+                <span
+                  aria-hidden="true"
+                  className="logo-shine-text absolute top-0 left-0.5 text-[19px] font-extrabold sm:text-[22px]"
+                >
+                  ApniGallery.com
+                </span>
               </span>
               <span className="hidden text-xs font-[var(--font-heading-ur)] font-bold text-[var(--color-text-dark)]/80 sm:block">
                 آپ کی یادیں، خوبصورت تحفوں کی صورت
@@ -54,7 +67,7 @@ export function Header() {
           {/* Search — desktop only */}
           <form
             onSubmit={handleSearchSubmit}
-            className="hidden max-w-md flex-1 items-center md:flex"
+            className="hidden max-w-sm flex-1 items-center md:flex"
           >
             <input
               type="text"
@@ -72,6 +85,30 @@ export function Header() {
               <Search size={16} />
             </button>
           </form>
+          {/* Row 2: Nav links — desktop, merged look via shared bg + subtle border */}
+          <nav className="hidden border-[var(--color-lavender)]/60 md:block">
+            <div className="mx-auto flex max-w-7xl items-center justify-center gap-7 px-4 py-2">
+              {navLinks.map((link) =>
+                link.active ? (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="text-sm font-medium text-[var(--color-text-dark)] transition-colors hover:text-[var(--color-accent)]"
+                  >
+                    {link.label}
+                  </Link>
+                ) : (
+                  <span
+                    key={link.href}
+                    title="Coming soon"
+                    className="cursor-not-allowed text-sm font-medium text-[var(--color-text-dark)]/40"
+                  >
+                    {link.label}
+                  </span>
+                )
+              )}
+            </div>
+          </nav>
 
           <div className="flex items-center gap-2 sm:gap-3">
             <Link
@@ -95,31 +132,6 @@ export function Header() {
             </button>
           </div>
         </div>
-
-        {/* Row 2: Nav links — desktop, merged look via shared bg + subtle border */}
-        <nav className="hidden border-t border-[var(--color-lavender)]/60 md:block">
-          <div className="mx-auto flex max-w-7xl items-center justify-center gap-7 px-4 py-2">
-            {navLinks.map((link) =>
-              link.active ? (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="text-sm font-medium text-[var(--color-text-dark)] transition-colors hover:text-[var(--color-accent)]"
-                >
-                  {link.label}
-                </Link>
-              ) : (
-                <span
-                  key={link.href}
-                  title="Coming soon"
-                  className="cursor-not-allowed text-sm font-medium text-[var(--color-text-dark)]/40"
-                >
-                  {link.label}
-                </span>
-              )
-            )}
-          </div>
-        </nav>
 
         {/* Mobile expanded panel */}
         {mobileOpen && (
