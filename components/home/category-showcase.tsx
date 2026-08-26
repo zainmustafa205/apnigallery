@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Package, ArrowLeft } from "lucide-react";
 import prisma from "@/lib/prisma";
 import { ProductCard } from "@/components/product/product-card";
+import { HorizontalScroller } from "@/components/shared/horizontal-scroller";
 
 export async function CategoryShowcase() {
   const categories = await prisma.category.findMany({
@@ -87,12 +88,12 @@ export async function CategoryShowcase() {
               </Link>
             </div>
 
-            <div className="-mx-4 mt-4 overflow-x-auto px-4 pb-3">
-              <div className="flex w-fit gap-4 sm:gap-5">
+            <div className="mt-4">
+              <HorizontalScroller>
                 {cards.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+                  <ProductCard key={product.id} product={product} compact />
                 ))}
-              </div>
+              </HorizontalScroller>
             </div>
           </section>
         );

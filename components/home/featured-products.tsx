@@ -1,5 +1,7 @@
 import prisma from "@/lib/prisma";
 import { ProductCard } from "@/components/product/product-card";
+import { SectionHeading } from "@/components/shared/section-heading";
+import { HorizontalScroller } from "@/components/shared/horizontal-scroller";
 
 export async function FeaturedProducts() {
   const products = await prisma.product.findMany({
@@ -11,15 +13,8 @@ export async function FeaturedProducts() {
       name: true,
       basePrice: true,
       isCustomizable: true,
-      images: {
-        where: { isPrimary: true },
-        take: 1,
-        select: { url: true },
-      },
-      variants: {
-        where: { isActive: true },
-        select: { id: true },
-      },
+      images: { where: { isPrimary: true }, take: 1, select: { url: true } },
+      variants: { where: { isActive: true }, select: { id: true } },
     },
   });
 
@@ -37,17 +32,13 @@ export async function FeaturedProducts() {
   }));
 
   return (
-    <section className="mx-auto w-full max-w-7xl overflow-hidden px-4 py-10 sm:py-14">
-      <h2 className="mb-6 text-center text-2xl font-bold text-[var(--color-primary)] sm:text-3xl">
-        ہماری مقبول مصنوعات
-      </h2>
-      <div className="-mx-4 overflow-x-auto px-4 pb-3">
-        <div className="mx-auto flex w-fit gap-4 sm:gap-5">
-          {cards.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      </div>
+    <section className="mx-auto w-full max-w-7xl overflow-hidden px-4 py-6 sm:py-10">
+      <SectionHeading title="ہماری مقبول مصنوعات" />
+      <HorizontalScroller>
+        {cards.map((product) => (
+          <ProductCard key={product.id} product={product} compact />
+        ))}
+      </HorizontalScroller>
     </section>
   );
 }

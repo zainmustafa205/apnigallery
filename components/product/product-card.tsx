@@ -18,7 +18,13 @@ type ProductCardData = {
   singleVariantId: string | null;
 };
 
-export function ProductCard({ product }: { product: ProductCardData }) {
+export function ProductCard({
+  product,
+  compact = false,
+}: {
+  product: ProductCardData;
+  compact?: boolean;
+}) {
   const { refreshCart } = useCart();
   const [isPending, startTransition] = useTransition();
   const [justAdded, setJustAdded] = useState(false);
@@ -28,14 +34,12 @@ export function ProductCard({ product }: { product: ProductCardData }) {
 
   function handleAddToCart() {
     if (!product.singleVariantId) return;
-
     startTransition(async () => {
       const result = await addToCart({
         productId: product.id,
         variantId: product.singleVariantId!,
         quantity: 1,
       });
-
       if (result.success) {
         await refreshCart();
         setJustAdded(true);
@@ -44,8 +48,21 @@ export function ProductCard({ product }: { product: ProductCardData }) {
     });
   }
 
+  const cardWidth = compact ? "w-36 sm:w-40" : "w-40 sm:w-64";
+  const padding = compact ? "p-3" : "p-2.5 sm:p-4";
+  const titleSize = compact ? "text-xs" : "text-xs sm:text-sm";
+  const titleLineHeight = compact ? "leading-4" : "leading-4 sm:leading-5";
+  const titleMinHeight = compact ? "min-h-[2rem]" : "min-h-[2rem] sm:min-h-[2.5rem]";
+  const priceSize = compact ? "text-sm" : "text-sm sm:text-base";
+  const btnPadding = compact ? "py-1.5" : "py-1.5 sm:py-2";
+  const btnText = compact ? "text-[11px]" : "text-[11px] sm:text-xs";
+  const iconSize = compact ? 12 : 13;
+  const gap = compact ? "gap-1.5" : "gap-1.5 sm:gap-2";
+
   return (
-    <div className="flex w-56 flex-shrink-0 flex-col overflow-hidden rounded-2xl border border-[var(--color-lavender)] bg-[var(--color-surface)] shadow-sm transition-shadow hover:shadow-md sm:w-64">
+    <div
+      className={`flex ${cardWidth} flex-shrink-0 flex-col overflow-hidden rounded-2xl border border-[var(--color-lavender)] bg-[var(--color-surface)] shadow-sm transition-shadow hover:shadow-md`}
+    >
       <Link
         href={`/product/${product.slug}`}
         className="relative block aspect-square bg-[var(--color-lavender)]"
@@ -56,63 +73,70 @@ export function ProductCard({ product }: { product: ProductCardData }) {
             alt={product.name}
             fill
             className="object-cover"
-            sizes="(max-width: 640px) 224px, 256px"
+            sizes={compact ? "160px" : "(max-width: 640px) 160px, 256px"}
           />
         ) : (
           <div className="flex h-full items-center justify-center text-[var(--color-primary)]/30">
-            <ShoppingCart size={40} />
+            <ShoppingCart size={compact ? 28 : 36} />
           </div>
         )}
       </Link>
 
-      <div className="flex flex-1 flex-col p-4">
+      <div className={`flex flex-col ${padding}`}>
         <Link href={`/product/${product.slug}`}>
-          <h3 className="line-clamp-2 text-sm font-semibold text-[var(--color-text-dark)]">
+          <h3
+            className={`line-clamp-2 ${titleSize} ${titleLineHeight} ${titleMinHeight} font-semibold text-[var(--color-text-dark)]`}
+          >
             {product.name}
           </h3>
         </Link>
-        <p className="mt-1 text-base font-bold text-[var(--color-primary)]">
+
+        <p className={`mt-1 ${priceSize} font-bold text-[var(--color-primary)]`}>
           Rs. {formattedPrice}
           {product.variantCount > 1 && (
-            <span className="text-xs font-normal text-[var(--color-text-dark)]/50">
+            <span className="text-[10px] font-normal text-[var(--color-text-dark)]/50">
               {" "}
-              se شروع
+              سے شروع
             </span>
           )}
         </p>
 
-        <div className="mt-3 flex flex-col gap-2">
+        <div className={`mt-2 flex flex-col ${gap}`}>
           {hasSingleVariant ? (
             <button
               onClick={handleAddToCart}
               disabled={isPending}
-              className="flex items-center justify-center gap-1.5 rounded-full bg-[var(--color-accent)] py-2 text-xs font-semibold text-white transition-colors hover:bg-[var(--color-accent-hover)] disabled:opacity-60"
+              className={`flex items-center justify-center gap-1.5 rounded-full bg-[var(--color-accent)] ${btnPadding} ${btnText} font-semibold text-white transition-colors hover:bg-[var(--color-accent-hover)] disabled:opacity-60`}
             >
               {justAdded ? (
                 <>
-                  <Check size={14} /> شامل ہوگیا
+                  <Check size={iconSize} />
+                  شامل ہوگیا
                 </>
               ) : (
                 <>
-                  <ShoppingCart size={14} /> Add to Cart
+                  <ShoppingCart size={iconSize} />
+                  Add to Cart
                 </>
               )}
             </button>
           ) : (
             <Link
               href={`/product/${product.slug}`}
-              className="flex items-center justify-center gap-1.5 rounded-full bg-[var(--color-accent)] py-2 text-xs font-semibold text-white transition-colors hover:bg-[var(--color-accent-hover)]"
+              className={`flex items-center justify-center gap-1.5 rounded-full bg-[var(--color-accent)] ${btnPadding} ${btnText} font-semibold text-white transition-colors hover:bg-[var(--color-accent-hover)]`}
             >
-              <ShoppingCart size={14} /> Select Options
+              <ShoppingCart size={iconSize} />
+              Select Options
             </Link>
           )}
 
           {product.isCustomizable && (
             <Link
               href={`/customize/${product.slug}`}
-              className="flex items-center justify-center gap-1.5 rounded-full border border-[var(--color-primary)] py-2 text-xs font-semibold text-[var(--color-primary)] transition-colors hover:bg-[var(--color-primary)] hover:text-white"
+              className={`hidden items-center justify-center gap-1.5 rounded-full border border-[var(--color-primary)] sm:flex ${btnPadding} ${btnText} font-semibold text-[var(--color-primary)] transition-colors hover:bg-[var(--color-primary)] hover:text-white`}
             >
-              <Sparkles size={14} /> Customize Now
+              <Sparkles size={iconSize} />
+              Customize Now
             </Link>
           )}
         </div>

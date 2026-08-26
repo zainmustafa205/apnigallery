@@ -4,7 +4,7 @@ import { CategoryShowcase } from "@/components/home/category-showcase";
 
 export default function HomePage() {
   return (
-    <div className="flex flex-col gap-10 sm:gap-14">
+    <div className="flex flex-col">
       <HeroSection />
       <FeaturedProducts />
       <CategoryShowcase />
