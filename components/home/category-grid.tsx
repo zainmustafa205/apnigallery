@@ -23,7 +23,7 @@ export async function CategoryGrid() {
             key={category.id}
             href={`/shop?category=${category.slug}`}
             // className="group flex w-24 flex-col items-center gap-2 text-center sm:w-40"
-            className="group flex w-[45%] flex-col items-center gap-2 text-center sm:w-40"
+            className="group flex w-[30%] flex-col items-center gap-2 text-center sm:w-40"
           >
             <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-[var(--color-lavender)] shadow-sm transition-transform group-hover:scale-105 group-hover:shadow-md">
               {category.image ? (

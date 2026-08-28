@@ -163,3 +163,14 @@ body {
     transform: translateX(calc(-1 * var(--marquee-distance)));
   }
 }
+
+@keyframes slide-in-left {
+  0% {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
