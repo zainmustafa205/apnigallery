@@ -40,7 +40,10 @@ export async function BusinessCollection() {
 
   return (
     <section className="mx-auto w-full max-w-7xl overflow-hidden px-4 pt-2 pb-6 sm:pt-4 sm:pb-10">
-      <SectionHeading title="Business Collection" dir="ltr" />
+      <SectionHeading
+        title="Business Collection"
+        subtitle="اپنے برانڈ کی پہچان،منفرد انداز میں"
+      />
       <HorizontalScroller>
         {cards.map((product) => (
           <ProductCard key={product.id} product={product} compact />

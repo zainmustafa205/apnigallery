@@ -33,7 +33,7 @@ export async function FeaturedProducts() {
 
   return (
     <section className="mx-auto w-full max-w-7xl overflow-hidden px-4 pt-6 pb-2 sm:pt-10 sm:pb-4">
-      <SectionHeading title="ہماری مقبول مصنوعات" />
+      <SectionHeading title="Hot Selling Products" subtitle="ہماری مقبول مصنوعات" />
       <HorizontalScroller>
         {cards.map((product) => (
           <ProductCard key={product.id} product={product} compact />

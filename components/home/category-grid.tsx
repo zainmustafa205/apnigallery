@@ -15,7 +15,7 @@ export async function CategoryGrid() {
 
   return (
     <section className="mx-auto w-full max-w-7xl overflow-hidden px-4 pt-2 pb-6 sm:pt-4 sm:pb-10">
-      <SectionHeading title="اپنی پسند، اپنا انداز" />
+      <SectionHeading title="Categories" subtitle="اپنی پسند، اپنا انداز" />
 
       <div className="flex flex-wrap justify-center gap-x-3 gap-y-5 sm:gap-x-5 sm:gap-y-7">
         {categories.map((category) => (
