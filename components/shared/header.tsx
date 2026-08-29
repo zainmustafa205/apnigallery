@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Search, ShoppingCart, Menu, X, Gift } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 import { useCart } from "@/components/providers/cart-provider";
+import { MobileSearchFab } from "./mobile-search-fab";
 
 const navLinks = [
   { label: "Home", href: "/", active: true },
@@ -30,7 +31,7 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full">
+    <header className="relative sticky top-0 z-50 w-full">
       {/* Top gradient strip — matches reference screenshot accent line */}
       <div className="h-1 w-full bg-gradient-to-r from-[var(--color-primary)] via-[var(--color-accent)] to-[var(--color-primary)]" />
 
@@ -136,24 +137,6 @@ export function Header() {
         {/* Mobile expanded panel */}
         {mobileOpen && (
           <div className="border-t border-[var(--color-lavender)]/60 px-4 py-4 select-none md:hidden">
-            <form onSubmit={handleSearchSubmit} className="mb-4 flex items-center">
-              <input
-                type="text"
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-                placeholder="پروڈکٹ تلاش کریں..."
-                dir="rtl"
-                className="w-full rounded-l-full border border-[var(--color-lavender)] bg-[var(--color-surface-alt)] px-4 py-2 text-sm text-[var(--color-text-dark)] outline-none focus:border-[var(--color-primary)]"
-              />
-              <button
-                type="submit"
-                aria-label="Search"
-                className="flex h-[38px] w-11 items-center justify-center rounded-r-full bg-[var(--color-primary)] text-white"
-              >
-                <Search size={16} />
-              </button>
-            </form>
-
             <div className="flex flex-col gap-1">
               {navLinks.map((link) =>
                 link.active ? (
@@ -178,6 +161,7 @@ export function Header() {
           </div>
         )}
       </div>
+      <MobileSearchFab />
     </header>
   );
 }
