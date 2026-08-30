@@ -27,7 +27,7 @@ export function SectionHeading({
       {subtitle && (
         <p
           dir="rtl"
-          className="mt-2 text-center text-xs font-[var(--font-heading-ur)] font-medium text-[var(--color-text-dark)]/55 sm:text-sm"
+          className="mt-0.5 text-center text-xs font-[var(--font-heading-ur)] font-medium text-[var(--color-text-dark)]/55 sm:text-sm"
         >
           {subtitle}
         </p>
