@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Search, ShoppingCart, Menu, X, Gift } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 import { useCart } from "@/components/providers/cart-provider";
 import { MobileSearchFab } from "./mobile-search-fab";
+import { useProductSearch } from "@/hooks/use-product-search";
 
 const navLinks = [
   { label: "Home", href: "/", active: true },
@@ -18,17 +19,30 @@ const navLinks = [
 
 export function Header() {
   const { itemCount } = useCart();
-  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
 
-  function handleSearchSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (searchValue.trim()) {
-      router.push(`/shop?search=${encodeURIComponent(searchValue.trim())}`);
-      setMobileOpen(false);
+  const [desktopSearchActive, setDesktopSearchActive] = useState(false);
+  const {
+    query: desktopQuery,
+    setQuery: setDesktopQuery,
+    results: desktopResults,
+    loading: desktopLoading,
+  } = useProductSearch(desktopSearchActive);
+
+  const searchWrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        searchWrapperRef.current &&
+        !searchWrapperRef.current.contains(e.target as Node)
+      ) {
+        setDesktopSearchActive(false);
+      }
     }
-  }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <header className="relative sticky top-0 z-50 w-full">
@@ -44,14 +58,11 @@ export function Header() {
             </span>
             <span className="flex flex-col">
               <span className="logo-bounce relative inline-block pl-0.5">
-                {/* Base layer — solid colors */}
                 <span className="text-[19px] font-extrabold sm:text-[22px]">
                   <span className="text-[var(--color-primary)]">Apni</span>
                   <span className="text-[var(--color-accent)]">Gallery</span>
                   <span className="text-[var(--color-primary)]">.com</span>
                 </span>
-
-                {/* Shine layer — exact duplicate, clipped to letter shapes only */}
                 <span
                   aria-hidden="true"
                   className="logo-shine-text absolute top-0 left-0.5 text-[19px] font-extrabold sm:text-[22px]"
@@ -65,27 +76,82 @@ export function Header() {
             </span>
           </Link>
 
-          {/* Search — desktop only */}
-          <form
-            onSubmit={handleSearchSubmit}
-            className="hidden max-w-sm flex-1 items-center md:flex"
+          {/* Search — desktop only, with live dropdown */}
+          <div
+            ref={searchWrapperRef}
+            className="relative hidden max-w-sm flex-1 md:block"
           >
-            <input
-              type="text"
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              placeholder="پروڈکٹ تلاش کریں..."
-              dir="rtl"
-              className="w-full rounded-l-full border border-[var(--color-lavender)] bg-[var(--color-surface-alt)] px-4 py-2 text-sm text-[var(--color-text-dark)] outline-none focus:border-[var(--color-primary)]"
-            />
-            <button
-              type="submit"
-              aria-label="Search"
-              className="flex h-[38px] w-11 items-center justify-center rounded-r-full bg-[var(--color-primary)] text-white transition-colors hover:bg-[var(--color-primary-light)]"
-            >
-              <Search size={16} />
-            </button>
-          </form>
+            <div className="flex items-center">
+              <input
+                type="text"
+                value={desktopQuery}
+                onChange={(e) => setDesktopQuery(e.target.value)}
+                onFocus={() => setDesktopSearchActive(true)}
+                placeholder="Search products..."
+                dir="ltr"
+                className="w-full rounded-l-full border border-[var(--color-lavender)] bg-[var(--color-surface-alt)] px-4 py-2 text-sm text-[var(--color-text-dark)] outline-none focus:border-[var(--color-primary)]"
+              />
+              <span className="flex h-[38px] w-11 items-center justify-center rounded-r-full bg-[var(--color-primary)] text-white">
+                <Search size={16} />
+              </span>
+            </div>
+
+            {desktopSearchActive && desktopQuery.trim() && (
+              <div className="absolute top-[46px] left-0 z-50 max-h-[70vh] w-full overflow-y-auto rounded-2xl border border-[var(--color-lavender)] bg-[var(--color-surface)] p-2 shadow-xl">
+                {desktopLoading && (
+                  <p className="py-4 text-center text-sm text-[var(--color-text-dark)]/50">
+                    Loading...
+                  </p>
+                )}
+                {!desktopLoading && desktopResults.length === 0 && (
+                  <p className="py-4 text-center text-sm text-[var(--color-text-dark)]/50">
+                    No products found
+                  </p>
+                )}
+                <div className="flex flex-col gap-2">
+                  {desktopResults.map((product) => (
+                    <Link
+                      key={product.id}
+                      href={`/product/${product.slug}`}
+                      onClick={() => {
+                        setDesktopSearchActive(false);
+                        setDesktopQuery("");
+                      }}
+                      className="flex items-center gap-3 rounded-xl p-2 hover:bg-[var(--color-lavender)]/40"
+                    >
+                      <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-[var(--color-lavender)]">
+                        {product.images?.[0]?.url ? (
+                          <Image
+                            src={product.images[0].url}
+                            alt={product.name}
+                            fill
+                            className="object-cover"
+                            sizes="48px"
+                          />
+                        ) : (
+                          <div className="flex h-full items-center justify-center">
+                            <ShoppingCart
+                              size={16}
+                              className="text-[var(--color-primary)]/30"
+                            />
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <p className="line-clamp-1 text-sm font-semibold text-[var(--color-text-dark)]">
+                          {product.name}
+                        </p>
+                        <p className="text-sm font-bold text-[var(--color-primary)]">
+                          Rs. {new Intl.NumberFormat("en-PK").format(product.basePrice)}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Row 2: Nav links — desktop, merged look via shared bg + subtle border */}
           <nav className="hidden border-[var(--color-lavender)]/60 md:block">
             <div className="mx-auto flex max-w-7xl items-center justify-center gap-7 px-4 py-2">

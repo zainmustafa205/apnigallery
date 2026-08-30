@@ -3,43 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import Fuse from "fuse.js";
 import { Search, X, ShoppingCart } from "lucide-react";
-
-type SearchResult = {
-  id: string;
-  slug: string;
-  name: string;
-  basePrice: number;
-  images?: { url: string }[];
-};
+import { useProductSearch } from "@/hooks/use-product-search";
 
 export function MobileSearchFab() {
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const [allProducts, setAllProducts] = useState<SearchResult[]>([]);
-  const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const fuseRef = useRef<Fuse<SearchResult> | null>(null);
-
-  // Fetch the full active product list once, the first time the search opens.
-  useEffect(() => {
-    if (!open || allProducts.length > 0) return;
-
-    setLoading(true);
-    fetch("/api/products?limit=200")
-      .then((res) => res.json())
-      .then((json) => {
-        const products: SearchResult[] = json?.data?.products ?? [];
-        setAllProducts(products);
-        fuseRef.current = new Fuse(products, {
-          keys: ["name"],
-          threshold: 0.4, // higher = more typo-tolerant
-          ignoreLocation: true,
-        });
-      })
-      .finally(() => setLoading(false));
-  }, [open, allProducts.length]);
+  const { query, setQuery, results, loading } = useProductSearch(open);
 
   useEffect(() => {
     if (open) {
@@ -47,14 +17,7 @@ export function MobileSearchFab() {
     } else {
       setQuery("");
     }
-  }, [open]);
-
-  const results: SearchResult[] = query.trim()
-    ? (fuseRef.current
-        ?.search(query.trim())
-        .slice(0, 6)
-        .map((r) => r.item) ?? [])
-    : [];
+  }, [open, setQuery]);
 
   return (
     <div
@@ -90,6 +53,7 @@ export function MobileSearchFab() {
             open ? "px-1 opacity-100" : "w-0 px-0 opacity-0"
           }`}
         />
+
         <button
           onClick={() => {
             if (!open) setOpen(true);
