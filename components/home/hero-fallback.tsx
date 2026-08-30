@@ -132,7 +132,7 @@ export function HeroFallback() {
             پورے پاکستان میں تیز ڈیلیوری
           </span>
 
-          <h1 className="mt-4 [animation:fade-in-up_0.6s_ease-out_0.15s_forwards] text-3xl leading-tight font-[var(--font-heading-ur)] font-bold text-[var(--color-primary)] opacity-0 sm:text-4xl">
+          <h1 className="mt-4 [animation:fade-in-up_0.6s_ease-out_0.15s_forwards] text-3xl leading-tight font-[var(--font-heading-ur)] font-bold text-[var(--color-hero-heading)] opacity-0 sm:text-4xl">
             اپنی یادوں کو بنائیں
           </h1>
           <h1 className="mt-1 [animation:fade-in-up_0.6s_ease-out_0.3s_forwards] text-4xl leading-tight font-[var(--font-heading-ur)] font-bold text-[var(--color-accent)] opacity-0 sm:text-5xl">

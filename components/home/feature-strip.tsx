@@ -73,7 +73,7 @@ export function FeatureStrip() {
     return () => window.removeEventListener("resize", measure);
   }, [copies]);
 
-  const duration = Math.max(period / 40, 12);
+  const duration = Math.max(period / 40, 40);
 
   return (
     <section className="w-full overflow-hidden bg-[var(--color-surface-alt)] py-5 sm:py-7">

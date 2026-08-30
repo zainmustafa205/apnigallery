@@ -21,6 +21,8 @@ body {
   --color-surface: #ffffff;
   --color-surface-alt: #faf7f9;
   --color-text-dark: #2d1b3d;
+  --color-header-fg: var(--color-primary);
+  --color-hero-heading: var(--color-text-dark);
 }
 
 /* Dark mode overrides — applied when .dark class is on <html> */
@@ -34,6 +36,8 @@ body {
   --color-surface: #1a1220;
   --color-surface-alt: #221729;
   --color-text-dark: #f3e8f5;
+  --color-header-fg: #ffffff;
+  --color-hero-heading: #ffffff;
 }
 
 body {

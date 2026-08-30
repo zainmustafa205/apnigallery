@@ -59,9 +59,9 @@ export function Header() {
             <span className="flex flex-col">
               <span className="logo-bounce relative inline-block pl-0.5">
                 <span className="text-[19px] font-extrabold sm:text-[22px]">
-                  <span className="text-[var(--color-primary)]">Apni</span>
+                  <span className="text-[var(--color-header-fg)]">Apni</span>
                   <span className="text-[var(--color-accent)]">Gallery</span>
-                  <span className="text-[var(--color-primary)]">.com</span>
+                  <span className="text-[var(--color-header-fg)]">.com</span>
                 </span>
                 <span
                   aria-hidden="true"
@@ -182,7 +182,7 @@ export function Header() {
               href="/cart"
               className="relative flex h-9 w-9 items-center justify-center"
             >
-              <ShoppingCart size={22} className="text-[var(--color-primary)]" />
+              <ShoppingCart size={22} className="text-[var(--color-header-fg)]" />
               {itemCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[var(--color-accent)] px-1 text-[10px] font-bold text-white">
                   {itemCount}
@@ -193,7 +193,7 @@ export function Header() {
             <button
               onClick={() => setMobileOpen((v) => !v)}
               aria-label="Toggle menu"
-              className="flex h-9 w-9 items-center justify-center text-[var(--color-primary)] md:hidden"
+              className="flex h-9 w-9 items-center justify-center text-[var(--color-header-fg)] md:hidden"
             >
               {mobileOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
