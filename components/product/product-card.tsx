@@ -21,9 +21,11 @@ type ProductCardData = {
 export function ProductCard({
   product,
   compact = false,
+  outOfStock = false,
 }: {
   product: ProductCardData;
   compact?: boolean;
+  outOfStock?: boolean;
 }) {
   const { refreshCart } = useCart();
   const [isPending, startTransition] = useTransition();
@@ -48,7 +50,7 @@ export function ProductCard({
     });
   }
 
-  const cardWidth = compact ? "w-36 sm:w-40" : "w-40 sm:w-64";
+  const cardWidth = compact ? "w-36 sm:w-40" : "w-full max-w-40 sm:max-w-48";
   const padding = compact ? "p-3" : "p-2.5 sm:p-4";
   const titleSize = compact ? "text-xs" : "text-xs sm:text-sm";
   const titleLineHeight = compact ? "leading-4" : "leading-4 sm:leading-5";
@@ -67,12 +69,17 @@ export function ProductCard({
         href={`/product/${product.slug}`}
         className="relative block aspect-square bg-[var(--color-lavender)]"
       >
+        {outOfStock && (
+          <span className="absolute top-2 left-2 z-10 rounded-full bg-black/70 px-2.5 py-1 text-[10px] font-bold text-white">
+            Out of Stock
+          </span>
+        )}
         {product.imageUrl ? (
           <Image
             src={product.imageUrl}
             alt={product.name}
             fill
-            className="object-cover"
+            className={`object-cover ${outOfStock ? "opacity-60 grayscale" : ""}`}
             sizes={compact ? "160px" : "(max-width: 640px) 160px, 256px"}
           />
         ) : (
@@ -102,7 +109,13 @@ export function ProductCard({
         </p>
 
         <div className={`mt-2 flex flex-col ${gap}`}>
-          {hasSingleVariant ? (
+          {outOfStock ? (
+            <span
+              className={`flex items-center justify-center rounded-full bg-[var(--color-text-dark)]/20 ${btnPadding} ${btnText} font-semibold text-[var(--color-text-dark)]/50`}
+            >
+              Currently Unavailable
+            </span>
+          ) : hasSingleVariant ? (
             <button
               onClick={handleAddToCart}
               disabled={isPending}
@@ -130,7 +143,7 @@ export function ProductCard({
             </Link>
           )}
 
-          {product.isCustomizable && (
+          {product.isCustomizable && !outOfStock && (
             <Link
               href={`/customize/${product.slug}`}
               className={`hidden items-center justify-center gap-1.5 rounded-full border border-[var(--color-primary)] sm:flex ${btnPadding} ${btnText} font-semibold text-[var(--color-primary)] transition-colors hover:bg-[var(--color-primary)] hover:text-white`}

@@ -59,7 +59,7 @@ export function HowItWorks() {
       ref={sectionRef}
       className="mx-auto w-full max-w-7xl overflow-hidden px-4 pt-6 pb-8 sm:pt-10 sm:pb-14"
     >
-      <SectionHeading title="How It Works" subtitle="آرڈر کرنے کا آسان طریقہ" />
+      <SectionHeading title="How TO Order" subtitle="آرڈر کرنے کا آسان طریقہ" />
 
       {/* Desktop: horizontal row with connector lines */}
       <div className="relative hidden sm:grid sm:grid-cols-4 sm:gap-4">
