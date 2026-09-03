@@ -66,7 +66,7 @@ export function ProductCard({
       className={`flex ${cardWidth} flex-shrink-0 flex-col overflow-hidden rounded-2xl border border-[var(--color-lavender)] bg-[var(--color-surface)] shadow-sm transition-shadow hover:shadow-md`}
     >
       <Link
-        href={`/product/${product.slug}`}
+        href={`/products/${product.slug}`}
         className="relative block aspect-square bg-[var(--color-lavender)]"
       >
         {outOfStock && (
@@ -90,7 +90,7 @@ export function ProductCard({
       </Link>
 
       <div className={`flex flex-col ${padding}`}>
-        <Link href={`/product/${product.slug}`}>
+        <Link href={`/products/${product.slug}`}>
           <h3
             className={`line-clamp-2 ${titleSize} ${titleLineHeight} ${titleMinHeight} font-semibold text-[var(--color-text-dark)]`}
           >
@@ -135,7 +135,7 @@ export function ProductCard({
             </button>
           ) : (
             <Link
-              href={`/product/${product.slug}`}
+              href={`/products/${product.slug}`}
               className={`flex items-center justify-center gap-1.5 rounded-full bg-[var(--color-accent)] ${btnPadding} ${btnText} font-semibold text-white transition-colors hover:bg-[var(--color-accent-hover)]`}
             >
               <ShoppingCart size={iconSize} />

@@ -1,0 +1,3 @@
+export const CARE_INSTRUCTIONS = `Apne custom-printed product ki chamak barqarar rakhne ke liye hath se dho lein, harsh chemicals ya bleach use na karein. Mugs ko microwave-safe rakha gaya hai lekin print ki longevity ke liye hath se dhona behtar hai. Fabric items (shirts/bags) ko cold water mein ulta kr ke dhoyein, print par seedha iron na karein.`;
+
+export const DELIVERY_INFO = `Order confirm hone ke baad 3-5 working days mein process ho kr dispatch hota hai. Pakistan bhar mein delivery 2-4 din mein (courier ke hisab se) mukammal hoti hai. Order dispatch hone par aapko tracking details WhatsApp/SMS ke zariye mil jayengi.`;
