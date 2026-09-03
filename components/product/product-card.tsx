@@ -124,7 +124,7 @@ export function ProductCard({
               {justAdded ? (
                 <>
                   <Check size={iconSize} />
-                  شامل ہوگیا
+                  Added
                 </>
               ) : (
                 <>

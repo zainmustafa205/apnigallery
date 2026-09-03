@@ -129,12 +129,12 @@ export default function VariantSelector({ variants, basePrice, onVariantChange }
                       ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10 font-medium text-[var(--color-accent)]"
                       : available
                         ? "border-[var(--color-lavender)] text-[var(--color-text-dark)] hover:border-[var(--color-primary-light)]"
-                        : "cursor-not-allowed border-[var(--color-lavender)] text-[var(--color-text-dark)]/30 line-through"
+                        : "cursor-not-allowed border-[var(--color-lavender)] text-[var(--color-text-dark)]/30"
                   }`}
                 >
                   {value}
                   {!available && (
-                    <span className="mt-0.5 block text-[10px] leading-none no-underline">
+                    <span className="mt-0.5 block text-[10px] leading-none">
                       Out of Stock
                     </span>
                   )}
