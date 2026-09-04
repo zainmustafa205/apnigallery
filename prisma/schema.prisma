@@ -164,6 +164,11 @@ model Category {
 
   @@map("categories")
 }
+enum CustomizationType {
+  IMAGE_ONLY
+  TEXT_ONLY
+  BOTH
+}
 
 model Product {
   id               String        @id @default(cuid())
@@ -174,6 +179,7 @@ model Product {
   description      String?
   basePrice        Decimal       @db.Decimal(10, 2)
   isCustomizable   Boolean       @default(true)
+  customizationType CustomizationType?
   isBulkAvailable  Boolean       @default(false)
   isFeatured       Boolean       @default(false)
   status           ProductStatus @default(DRAFT)
@@ -222,6 +228,7 @@ model ProductImage {
   publicId  String?
   altText   String?
   isPrimary Boolean @default(false)
+  isMockup  Boolean @default(false)
   sortOrder Int     @default(0)
 
   @@index([productId])
