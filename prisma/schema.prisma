@@ -240,20 +240,15 @@ model ProductImage {
 // ==========================================================
 
 model Design {
-  id                    String   @id @default(cuid())
-  userId                String?
-  user                  User?    @relation(fields: [userId], references: [id])
-  productId             String
-  product               Product  @relation(fields: [productId], references: [id])
-  uploadedImageUrl      String?
-  uploadedImagePublicId String?
-  textContent           String?
-  fontFamily            String?
-  textColor             String?
-  overlayPosition       Json?
-  previewImageUrl       String?
-  previewImagePublicId  String?
-  createdAt             DateTime @default(now())
+  id                   String   @id @default(cuid())
+  userId               String?
+  user                 User?    @relation(fields: [userId], references: [id])
+  productId            String
+  product              Product  @relation(fields: [productId], references: [id])
+  elements             Json?
+  previewImageUrl      String?
+  previewImagePublicId String?
+  createdAt            DateTime @default(now())
 
   cartItems  CartItem[]
   orderItems OrderItem[]
