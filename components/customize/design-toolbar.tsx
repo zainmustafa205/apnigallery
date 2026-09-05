@@ -1,7 +1,7 @@
 "use client";
 
 import { Bold, Italic, Trash2, Plus, Upload } from "lucide-react";
-import { FONT_OPTIONS } from "@/lib/customize-fonts";
+import { FONT_OPTIONS, isUrduScript } from "@/lib/customize-fonts";
 import type { DesignElement } from "@/components/customize/mockup-canvas";
 
 export interface TextStyle {
@@ -37,6 +37,31 @@ export function DesignToolbar({
   const canAddImage = customizationType === "IMAGE_ONLY" || customizationType === "BOTH";
   const isTextSelected = selectedElement?.type === "text";
 
+  const currentContent = selectedElement?.content ?? "";
+  const typingUrdu = isUrduScript(currentContent);
+
+  // Smart filter: while typing Urdu script, only show Urdu-capable fonts
+  const visibleFonts = typingUrdu
+    ? FONT_OPTIONS.filter((f) => f.script === "urdu")
+    : FONT_OPTIONS;
+
+  function handleContentInputChange(value: string) {
+    onContentChange(value);
+
+    const willBeUrdu = isUrduScript(value);
+    const currentFontIsUrdu =
+      FONT_OPTIONS.find((f) => f.value === textStyle.fontFamily)?.script === "urdu";
+
+    // Auto-switch to a Urdu font the moment Urdu script is typed with a
+    // Latin-only font selected — otherwise the text would silently render
+    // in the browser's fallback font instead of the chosen style.
+    if (willBeUrdu && !currentFontIsUrdu) {
+      onTextStyleChange({
+        fontFamily: FONT_OPTIONS.find((f) => f.script === "urdu")!.value,
+      });
+    }
+  }
+
   return (
     <div className="space-y-4 rounded-lg border border-black/10 bg-[color:var(--color-surface)] p-4">
       <div className="flex flex-wrap gap-2">
@@ -60,9 +85,6 @@ export function DesignToolbar({
         )}
       </div>
 
-      {/* Text formatting panel — ALWAYS visible when text customization is allowed.
-          Edits the selected text element if one is selected, otherwise edits
-          the default style used for the next "Add Text". */}
       {canAddText && (
         <div className="space-y-3 border-t border-black/10 pt-3">
           <p className="text-xs font-semibold text-[color:var(--color-primary)]">
@@ -76,10 +98,16 @@ export function DesignToolbar({
               </label>
               <input
                 type="text"
-                value={selectedElement?.content ?? ""}
-                onChange={(e) => onContentChange(e.target.value)}
+                dir={typingUrdu ? "rtl" : "ltr"}
+                value={currentContent}
+                onChange={(e) => handleContentInputChange(e.target.value)}
                 className="mt-1 w-full rounded-md border border-black/15 px-2 py-1.5 text-sm"
               />
+              {typingUrdu && (
+                <p className="mt-1 text-[11px] text-[color:var(--color-accent)]">
+                  Urdu script detect ho gayi — sirf Urdu fonts dikhaye ja rahe hain
+                </p>
+              )}
             </div>
           )}
 
@@ -92,7 +120,7 @@ export function DesignToolbar({
               onChange={(e) => onTextStyleChange({ fontFamily: e.target.value })}
               className="mt-1 w-full rounded-md border border-black/15 px-2 py-1.5 text-sm"
             >
-              {FONT_OPTIONS.map((f) => (
+              {visibleFonts.map((f) => (
                 <option key={f.value} value={f.value}>
                   {f.label}
                 </option>
