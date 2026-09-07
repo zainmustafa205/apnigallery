@@ -1,12 +1,29 @@
 // components/product/add-to-cart-panel.tsx
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ShoppingCart, Sparkles, Check, Minus, Plus, Zap } from "lucide-react";
+import {
+  ShoppingCart,
+  Sparkles,
+  Check,
+  Minus,
+  Plus,
+  Zap,
+  Upload,
+  Type,
+} from "lucide-react";
 import { addToCart } from "@/lib/actions/cart.actions";
+import { saveDesign, uploadDesignImage } from "@/lib/actions/design.actions";
 import { useCart } from "@/components/providers/cart-provider";
 import VariantSelector from "@/components/product/variant-selector";
+import type { DesignElement } from "@/lib/design-types";
+import {
+  buildTextOnlyElements,
+  buildImageOnlyElements,
+  buildBothElements,
+} from "@/lib/design-defaults";
 
 type Variant = {
   id: string;
@@ -18,10 +35,13 @@ type Variant = {
   stock: number;
 };
 
+type CustomizationType = "IMAGE_ONLY" | "TEXT_ONLY" | "BOTH" | null;
+
 type Props = {
   productId: string;
   productSlug: string;
   isCustomizable: boolean;
+  customizationType: CustomizationType;
   variants: Variant[];
   basePrice: number;
 };
@@ -30,10 +50,12 @@ export default function AddToCartPanel({
   productId,
   productSlug,
   isCustomizable,
+  customizationType,
   variants,
   basePrice,
 }: Props) {
   const { refreshCart } = useCart();
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [justAdded, setJustAdded] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -41,8 +63,30 @@ export default function AddToCartPanel({
   const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
   const [quantity, setQuantity] = useState(1);
 
+  // --- Quick customization fields ---
+  const [quickText, setQuickText] = useState("");
+  const [uploadedImage, setUploadedImage] = useState<{
+    url: string;
+    publicId: string;
+  } | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [lowResWarning, setLowResWarning] = useState(false);
+  const [designError, setDesignError] = useState<string | null>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
+  const needsText = customizationType === "TEXT_ONLY" || customizationType === "BOTH";
+  const needsImage = customizationType === "IMAGE_ONLY" || customizationType === "BOTH";
+
+  const hasRequiredText = !needsText || quickText.trim().length > 0;
+  const hasRequiredImage = !needsImage || !!uploadedImage;
+  const designRequirementsMet = hasRequiredText && hasRequiredImage;
+
   const maxQty = selectedVariant ? Math.min(selectedVariant.stock, 50) : 0;
-  const canOrder = !!selectedVariant && selectedVariant.stock > 0 && quantity >= 1;
+  const canOrder =
+    !!selectedVariant &&
+    selectedVariant.stock > 0 &&
+    quantity >= 1 &&
+    designRequirementsMet;
 
   function handleVariantChange(variant: Variant | null) {
     setSelectedVariant((prev) => {
@@ -62,15 +106,76 @@ export default function AddToCartPanel({
     setQuantity((q) => Math.min(maxQty, q + 1));
   }
 
+  async function handleQuickImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingImage(true);
+    setDesignError(null);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const result = await uploadDesignImage(formData);
+    setIsUploadingImage(false);
+
+    if (!result.success) {
+      setDesignError(result.error);
+      return;
+    }
+
+    setUploadedImage({ url: result.data.url, publicId: result.data.publicId });
+    setLowResWarning(result.data.lowResolutionWarning);
+    e.target.value = "";
+  }
+
+  /**
+   * Builds elements from quick-fields and saves a Design record.
+   * Only called after designRequirementsMet is confirmed true (buttons are
+   * disabled otherwise), so quickText/uploadedImage are guaranteed present
+   * for whichever fields customizationType requires.
+   */
+  async function ensureDesignId(): Promise<{ ok: boolean; designId: string | null }> {
+    if (!customizationType) return { ok: true, designId: null };
+
+    const hasText = quickText.trim().length > 0;
+    const hasImage = !!uploadedImage;
+
+    let elements: DesignElement[];
+    if (hasText && hasImage) {
+      elements = buildBothElements(quickText.trim(), uploadedImage!.url);
+    } else if (hasText) {
+      elements = buildTextOnlyElements(quickText.trim());
+    } else if (hasImage) {
+      elements = buildImageOnlyElements(uploadedImage!.url);
+    } else {
+      // Should not happen — buttons are disabled until designRequirementsMet.
+      return { ok: false, designId: null };
+    }
+
+    const result = await saveDesign({ productId, elements });
+    if (!result.success) {
+      setDesignError(result.error);
+      return { ok: false, designId: null };
+    }
+
+    return { ok: true, designId: result.data.designId };
+  }
+
   function handleAddToCart() {
-    if (!selectedVariant) return;
+    if (!selectedVariant || !designRequirementsMet) return;
     setErrorMsg(null);
+    setDesignError(null);
 
     startTransition(async () => {
+      const designResult = await ensureDesignId();
+      if (!designResult.ok) return;
+
       const result = await addToCart({
         productId,
         variantId: selectedVariant.id,
         quantity,
+        designId: designResult.designId ?? undefined,
       });
 
       if (result.success) {
@@ -83,12 +188,28 @@ export default function AddToCartPanel({
     });
   }
 
-  // Buy Now — bypasses cart entirely, goes straight to a direct checkout
-  // (checkout page itself is built in Chat 11 — this link is correct/expected
-  // to 404 for now, same as the Customize button below linking to Chat 10's page)
-  const buyNowHref = selectedVariant
-    ? `/checkout?mode=direct&productId=${productId}&variantId=${selectedVariant.id}&quantity=${quantity}`
-    : "#";
+  function handleBuyNow() {
+    if (!selectedVariant || !designRequirementsMet) return;
+    setErrorMsg(null);
+    setDesignError(null);
+
+    startTransition(async () => {
+      const designResult = await ensureDesignId();
+      if (!designResult.ok) return;
+
+      const params = new URLSearchParams({
+        mode: "direct",
+        productId,
+        variantId: selectedVariant.id,
+        quantity: String(quantity),
+      });
+      if (designResult.designId) {
+        params.set("designId", designResult.designId);
+      }
+
+      router.push(`/checkout?${params.toString()}`);
+    });
+  }
 
   return (
     <div className="space-y-5">
@@ -130,6 +251,90 @@ export default function AddToCartPanel({
         </div>
       )}
 
+      {/* Quick customization fields — MANDATORY when customizationType is set.
+          Add to Cart / Buy Now stay disabled until required fields are filled. */}
+      {customizationType && (
+        <div className="space-y-4 rounded-xl border border-[var(--color-lavender)] bg-[var(--color-surface-alt)] p-5">
+          <p className="text-xs font-semibold text-[var(--color-accent)]">*Required</p>
+
+          {needsText && (
+            <div>
+              <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-[var(--color-text-dark)]">
+                <Type size={14} />
+                Apna Text Likhein <span className="text-[var(--color-accent)]">*</span>
+              </label>
+              <input
+                type="text"
+                value={quickText}
+                onChange={(e) => setQuickText(e.target.value)}
+                placeholder="e.g. Happy Birthday Ali"
+                className="w-full rounded-lg border border-[var(--color-lavender)] bg-[var(--color-surface)] px-3.5 py-2.5 text-sm text-[var(--color-text-dark)] transition-colors outline-none focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10"
+              />
+            </div>
+          )}
+
+          {needsImage && (
+            <div>
+              <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-[var(--color-text-dark)]">
+                <Upload size={14} />
+                Apni Tasveer Upload Karein{" "}
+                <span className="text-[var(--color-accent)]">*</span>
+              </label>
+
+              <input
+                ref={imageInputRef}
+                type="file"
+                accept="image/png,image/jpeg"
+                onChange={handleQuickImageSelect}
+                className="hidden"
+                id="quick-image-upload"
+              />
+
+              <label
+                htmlFor="quick-image-upload"
+                className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[var(--color-lavender)] bg-[var(--color-surface)] px-4 py-3 text-sm text-[var(--color-text-dark)]/70 transition-colors hover:border-[var(--color-primary-light)] hover:bg-[var(--color-lavender)]/20"
+              >
+                <Upload size={16} className="text-[var(--color-primary)]" />
+                {uploadedImage ? "Tasveer Badal Dein" : "Tasveer Chunein"}
+              </label>
+
+              {isUploadingImage && (
+                <p className="mt-2 text-xs text-[var(--color-text-dark)]/60">
+                  Upload ho raha hai...
+                </p>
+              )}
+
+              {uploadedImage && !isUploadingImage && (
+                <div className="mt-2.5 flex items-center gap-2.5 rounded-lg border border-[var(--color-lavender)] bg-[var(--color-surface)] p-2">
+                  <img
+                    src={uploadedImage.url}
+                    alt="Uploaded"
+                    className="h-12 w-12 rounded-md border border-[var(--color-lavender)] object-cover"
+                  />
+                  <span className="flex items-center gap-1 text-xs font-medium text-green-600">
+                    <Check size={14} />
+                    Upload ho gayi
+                  </span>
+                </div>
+              )}
+
+              {lowResWarning && (
+                <p className="mt-2 text-xs text-amber-600">
+                  ⚠️ Ye image thodi low-resolution hai — print quality behtar rakhne ke
+                  liye zyada high-quality image use karein.
+                </p>
+              )}
+            </div>
+          )}
+
+          {designError && (
+            <p className="text-xs font-medium text-[var(--color-accent)]">
+              {designError}
+            </p>
+          )}
+        </div>
+      )}
+
       {errorMsg && (
         <p className="text-sm font-medium text-[var(--color-accent)]">{errorMsg}</p>
       )}
@@ -155,24 +360,22 @@ export default function AddToCartPanel({
           )}
         </button>
 
-        <Link
-          href={canOrder ? buyNowHref : "#"}
-          aria-disabled={!canOrder}
-          onClick={(e) => {
-            if (!canOrder) e.preventDefault();
-          }}
+        <button
+          type="button"
+          onClick={handleBuyNow}
+          disabled={!canOrder || isPending}
           className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white transition-colors ${
-            canOrder
+            canOrder && !isPending
               ? "bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)]"
               : "cursor-not-allowed bg-[var(--color-accent)]/40"
           }`}
         >
           <Zap size={16} />
           Buy Now
-        </Link>
+        </button>
       </div>
 
-      {/* Secondary action: Customize — always rendered, disabled if not customizable, for layout consistency */}
+      {/* Secondary action: Customize Further — full canvas control (fonts, colors, position) */}
       <Link
         href={isCustomizable ? `/customize/${productSlug}` : "#"}
         aria-disabled={!isCustomizable}
@@ -186,7 +389,9 @@ export default function AddToCartPanel({
         }`}
       >
         <Sparkles size={16} />
-        {isCustomizable ? "Customize This Product" : "Customization Not Available"}
+        {isCustomizable
+          ? "Customize Further (Fonts, Colors, Position)"
+          : "Customization Not Available"}
       </Link>
     </div>
   );

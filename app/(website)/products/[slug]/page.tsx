@@ -144,6 +144,8 @@ export default async function ProductDetailPage({ params }: Props) {
               productId={product.id}
               productSlug={product.slug}
               isCustomizable={product.isCustomizable}
+              customizationType={product.customizationType}
+
               variants={variantsForClient}
               basePrice={basePrice}
             />
