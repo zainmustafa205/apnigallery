@@ -210,6 +210,31 @@ export default function AddToCartPanel({
       router.push(`/checkout?${params.toString()}`);
     });
   }
+  function handleCustomizeFurther() {
+    if (!isCustomizable) return;
+
+    const hasAnyInput = quickText.trim().length > 0 || !!uploadedImage;
+
+    // Kuch bhara hi nahi hai to seedha khaali canvas pe le jao —
+    // koi design save karne ki zaroorat nahi.
+    if (!hasAnyInput) {
+      router.push(`/customize/${productSlug}`);
+      return;
+    }
+
+    setDesignError(null);
+
+    startTransition(async () => {
+      const designResult = await ensureDesignId();
+      if (designResult.ok && designResult.designId) {
+        router.push(`/customize/${productSlug}?designId=${designResult.designId}`);
+      } else {
+        // Save fail hui to bhi customer ko block nahi karna — bas khaali
+        // canvas pe bhej do, wo wahan se shuru kr sakta hai.
+        router.push(`/customize/${productSlug}`);
+      }
+    });
+  }
 
   return (
     <div className="space-y-5">
@@ -376,12 +401,10 @@ export default function AddToCartPanel({
       </div>
 
       {/* Secondary action: Customize Further — full canvas control (fonts, colors, position) */}
-      <Link
-        href={isCustomizable ? `/customize/${productSlug}` : "#"}
-        aria-disabled={!isCustomizable}
-        onClick={(e) => {
-          if (!isCustomizable) e.preventDefault();
-        }}
+      <button
+        type="button"
+        onClick={handleCustomizeFurther}
+        disabled={!isCustomizable || isPending}
         className={`flex w-full items-center justify-center gap-2 rounded-xl border py-3 text-sm font-semibold transition-colors ${
           isCustomizable
             ? "border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white"
@@ -392,7 +415,7 @@ export default function AddToCartPanel({
         {isCustomizable
           ? "Customize Further (Fonts, Colors, Position)"
           : "Customization Not Available"}
-      </Link>
+      </button>
     </div>
   );
 }

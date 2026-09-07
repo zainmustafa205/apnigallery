@@ -24,10 +24,15 @@ interface OrderBuilderProps {
   customizationType: "IMAGE_ONLY" | "TEXT_ONLY" | "BOTH";
   mockupImageUrl: string | null;
   variants: Variant[];
+  initialElements?: DesignElement[];
+  initialDesignId?: string | null;
 }
 
 export function OrderBuilder(props: OrderBuilderProps) {
-  const [elements, setElements] = useState<DesignElement[]>([]);
+  const [elements, setElements] = useState<DesignElement[]>(props.initialElements ?? []);
+  // designId abhi track ho raha hai — agla step (canvas se Add to Cart/Buy Now)
+  // isay use karega taake naya Design create hone ke bajaye same record update ho.
+  const [designId, setDesignId] = useState<string | null>(props.initialDesignId ?? null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [defaultTextStyle, setDefaultTextStyle] = useState<TextStyle>({
     fontFamily: FONT_OPTIONS[0].value,

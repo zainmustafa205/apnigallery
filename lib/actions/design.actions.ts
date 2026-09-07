@@ -87,21 +87,16 @@ type OverlayPosition = {
 };
 
 type SaveDesignInput = {
-  designId?: string; // agar diya gaya -> update, warna -> create
+  designId?: string;
   productId: string;
-  uploadedImageUrl?: string;
-  uploadedImagePublicId?: string;
-  textContent?: string;
-  fontFamily?: string;
-  textColor?: string;
-  overlayPosition?: OverlayPosition;
+  elements: unknown;
 };
 
 type SaveDesignResult =
   { success: true; data: { designId: string } } | { success: false; error: string };
 
 export async function saveDesign(input: SaveDesignInput): Promise<SaveDesignResult> {
-  const { designId, productId } = input;
+  const { designId, productId, elements } = input;
 
   // --- Validate product exists ---
   const product = await prisma.product.findUnique({
@@ -116,16 +111,6 @@ export async function saveDesign(input: SaveDesignInput): Promise<SaveDesignResu
   // --- Get logged-in user (if any) ---
   const session = await auth();
   const userId = session?.user?.id ?? null;
-
-  const designData = {
-    productId,
-    uploadedImageUrl: input.uploadedImageUrl,
-    uploadedImagePublicId: input.uploadedImagePublicId,
-    textContent: input.textContent,
-    fontFamily: input.fontFamily,
-    textColor: input.textColor,
-    overlayPosition: input.overlayPosition,
-  };
 
   try {
     if (designId) {
@@ -146,7 +131,7 @@ export async function saveDesign(input: SaveDesignInput): Promise<SaveDesignResu
 
       const updated = await prisma.design.update({
         where: { id: designId },
-        data: designData,
+        data: { productId, elements: JSON.parse(JSON.stringify(elements)) },
       });
 
       return { success: true, data: { designId: updated.id } };
@@ -154,7 +139,8 @@ export async function saveDesign(input: SaveDesignInput): Promise<SaveDesignResu
       // --- Create new design ---
       const created = await prisma.design.create({
         data: {
-          ...designData,
+          productId,
+          elements: JSON.parse(JSON.stringify(elements)),
           userId,
         },
       });
