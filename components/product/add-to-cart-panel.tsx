@@ -8,6 +8,7 @@ import {
 } from "@/lib/actions/design.actions";
 import { useState, useTransition, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { setLastDesignCookie } from "@/lib/design-cookie";
 import {
   ShoppingCart,
   Sparkles,
@@ -172,6 +173,7 @@ export default function AddToCartPanel({
       return { ok: false, designId: null };
     }
 
+    setLastDesignCookie(productId, result.data.designId);
     return { ok: true, designId: result.data.designId };
   }
 
@@ -333,7 +335,7 @@ export default function AddToCartPanel({
                 className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[var(--color-lavender)] bg-[var(--color-surface)] px-4 py-3 text-sm text-[var(--color-text-dark)]/70 transition-colors hover:border-[var(--color-primary-light)] hover:bg-[var(--color-lavender)]/20"
               >
                 <Upload size={16} className="text-[var(--color-primary)]" />
-                {uploadedImage ? "Tasveer Badal Dein" : "Tasveer Chunein"}
+                {uploadedImage ? "Tasveer Badal Dein" : "Uplead Your Image"}
               </label>
 
               {isUploadingImage && (

@@ -13,6 +13,7 @@ import ProductDetailsAccordion from "@/components/product/product-details-accord
 import { CARE_INSTRUCTIONS, DELIVERY_INFO } from "@/lib/product-policy-content";
 import { CustomizeTips } from "@/components/customize/customize-tips";
 import { ShoppingCart, Zap, Minus, Plus, Check, MessageCircle } from "lucide-react";
+import { setLastDesignCookie } from "@/lib/design-cookie";
 import {
   saveDesign,
   uploadDesignImage,
@@ -248,6 +249,7 @@ export function OrderBuilder(props: OrderBuilderProps) {
         if (result.success) {
           designIdRef.current = result.data.designId;
           setDesignId(result.data.designId);
+          setLastDesignCookie(props.productId, result.data.designId);
         } else {
           console.error("Auto-save failed:", result.error);
         }
@@ -276,6 +278,7 @@ export function OrderBuilder(props: OrderBuilderProps) {
 
       designIdRef.current = result.data.designId;
       setDesignId(result.data.designId);
+      setLastDesignCookie(props.productId, result.data.designId);
       return { ok: true, designId: result.data.designId };
     } catch (err) {
       console.error("persistDesign threw an error:", err);
@@ -336,7 +339,7 @@ export function OrderBuilder(props: OrderBuilderProps) {
     <div className={`mx-auto max-w-6xl px-4 py-8 ${CUSTOMIZE_FONT_CLASSNAMES}`}>
       <div className="mb-8">
         <SectionHeading
-          title={`Customize Your ${props.productName}`}
+          title={`Customize Your Order`}
           subtitle="اپنی پسند سے ڈیزائن کریں"
         />
       </div>

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import prisma from "@/lib/prisma";
 import { OrderBuilder } from "@/components/customize/order-builder";
 import type { DesignElement } from "@/lib/design-types";
+import { cookies } from "next/headers";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -42,7 +43,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function CustomizePage({ params, searchParams }: PageProps) {
   const { slug } = await params;
-  const { designId } = await searchParams;
+  const { designId: designIdParam } = await searchParams;
   const product = await getProductForCustomize(slug);
 
   if (!product) {
@@ -55,9 +56,19 @@ export default async function CustomizePage({ params, searchParams }: PageProps)
     notFound();
   }
 
-  // Agar Quick Fields se koi designId carry hoke aaya hai, uska existing
-  // data load karke canvas pre-fill karte hain — customer ko dobara type/
-  // upload nahi karna parta.
+  // Resolve which design (if any) to pre-load, in priority order:
+  // 1. Explicit ?designId= in the URL (came from "Customize Further" with
+  //    Quick Fields data, or a direct link).
+  // 2. This browser's last-used design for this specific product (cookie) —
+  //    a pure UX convenience for resuming work, NOT an ownership mechanism.
+  //    Ownership is still enforced by the design's own unguessable id.
+  let designId = designIdParam ?? null;
+
+  if (!designId) {
+    const cookieStore = await cookies();
+    designId = cookieStore.get(`design_${product.id}`)?.value ?? null;
+  }
+
   let initialElements: DesignElement[] = [];
   let initialDesignId: string | null = null;
 
