@@ -93,6 +93,7 @@ export default async function CustomizePage({ params, searchParams }: PageProps)
       productId={product.id}
       productName={product.name}
       productSlug={product.slug}
+      productDescription={product.description}
       basePrice={basePrice}
       customizationType={product.customizationType}
       mockupImageUrl={mockupImage?.url ?? null}
