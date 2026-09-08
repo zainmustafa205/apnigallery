@@ -13,6 +13,7 @@ import {
   Zap,
   Upload,
   Type,
+  MessageCircle,
 } from "lucide-react";
 import { addToCart } from "@/lib/actions/cart.actions";
 import { saveDesign, uploadDesignImage } from "@/lib/actions/design.actions";
@@ -357,6 +358,17 @@ export default function AddToCartPanel({
               {designError}
             </p>
           )}
+
+          <div className="flex items-start gap-2 border-t border-[var(--color-lavender)] pt-3">
+            <MessageCircle
+              size={16}
+              className="mt-0.5 flex-shrink-0 text-[var(--color-accent)]"
+            />
+            <p className="text-xs text-[var(--color-accent)]">
+              Printing shuru karne se pehle hum aapse WhatsApp/Call par design confirm
+              karenge.
+            </p>
+          </div>
         </div>
       )}
 

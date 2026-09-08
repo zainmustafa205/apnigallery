@@ -122,10 +122,14 @@ export default async function ProductDetailPage({ params }: Props) {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
-        {/* Left: Gallery */}
-        <ProductGallery images={product.images} productName={product.name} />
+        {/* Left: Gallery + Description/Care/Delivery */}
+        <div className="flex flex-col gap-6">
+          <ProductGallery images={product.images} productName={product.name} />
 
-        {/* Right: Product Info */}
+          <ProductDetailsAccordion sections={accordionSections} />
+        </div>
+
+        {/* Right: Product Info + Purchase Actions */}
         <div className="flex flex-col gap-5">
           <div>
             <Link
@@ -145,14 +149,9 @@ export default async function ProductDetailPage({ params }: Props) {
               productSlug={product.slug}
               isCustomizable={product.isCustomizable}
               customizationType={product.customizationType}
-
               variants={variantsForClient}
               basePrice={basePrice}
             />
-          </div>
-
-          <div className="border-t border-[var(--color-lavender)] pt-5">
-            <ProductDetailsAccordion sections={accordionSections} />
           </div>
         </div>
       </div>

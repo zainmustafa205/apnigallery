@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Image from "next/image";
-import { X } from "lucide-react";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
 
 type GalleryImage = {
   id: string;
@@ -28,6 +28,7 @@ export default function ProductGallery({ images, productName }: Props) {
 
   const [selectedIndex, setSelectedIndex] = useState(defaultIndex);
   const [zoomOpen, setZoomOpen] = useState(false);
+  const touchStartX = useRef<number | null>(null);
 
   if (!hasImages) {
     return (
@@ -39,25 +40,83 @@ export default function ProductGallery({ images, productName }: Props) {
 
   const selectedImage = images[selectedIndex];
 
+  function goToPrevious() {
+    setSelectedIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  }
+
+  function goToNext() {
+    setSelectedIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  }
+
+  function handleTouchStart(e: React.TouchEvent) {
+    touchStartX.current = e.touches[0].clientX;
+  }
+
+  function handleTouchEnd(e: React.TouchEvent) {
+    if (touchStartX.current === null) return;
+    const deltaX = e.changedTouches[0].clientX - touchStartX.current;
+    const swipeThreshold = 40;
+
+    if (deltaX > swipeThreshold) {
+      goToPrevious();
+    } else if (deltaX < -swipeThreshold) {
+      goToNext();
+    }
+    touchStartX.current = null;
+  }
+
   return (
     <div className="mx-auto w-full max-w-md lg:max-w-full">
       <div className="flex flex-col gap-3 sm:flex-row-reverse">
         {/* Main image */}
         <div className="flex-1">
-          <button
-            type="button"
-            onClick={() => setZoomOpen(true)}
-            className="relative block aspect-square w-full overflow-hidden rounded-2xl border border-[var(--color-lavender)] bg-[var(--color-surface-alt)] shadow-sm transition-shadow hover:shadow-md"
+          <div
+            className="group relative"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
           >
-            <Image
-              src={selectedImage.url}
-              alt={selectedImage.altText || productName}
-              fill
-              className="object-cover"
-              sizes="(max-width: 1024px) 90vw, 40vw"
-              priority
-            />
-          </button>
+            <button
+              type="button"
+              onClick={() => setZoomOpen(true)}
+              className="relative block aspect-square w-full overflow-hidden rounded-2xl border border-[var(--color-lavender)] bg-[var(--color-surface-alt)] shadow-sm transition-shadow hover:shadow-md"
+            >
+              <Image
+                src={selectedImage.url}
+                alt={selectedImage.altText || productName}
+                fill
+                className="object-cover"
+                sizes="(max-width: 1024px) 90vw, 40vw"
+                priority
+              />
+            </button>
+
+            {images.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    goToPrevious();
+                  }}
+                  aria-label="Previous image"
+                  className="absolute top-1/2 left-1 hidden h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/60 text-[var(--color-primary)]/80 opacity-0 shadow-sm backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100 hover:bg-white/80 sm:flex"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    goToNext();
+                  }}
+                  aria-label="Next image"
+                  className="absolute top-1/2 right-1 hidden h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/60 text-[var(--color-primary)]/80 opacity-0 shadow-sm backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100 hover:bg-white/80 sm:flex"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Thumbnails: row below on mobile, column on the left on desktop */}
@@ -92,6 +151,8 @@ export default function ProductGallery({ images, productName }: Props) {
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
           onClick={() => setZoomOpen(false)}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
         >
           <button
             type="button"
@@ -100,6 +161,34 @@ export default function ProductGallery({ images, productName }: Props) {
           >
             <X size={24} />
           </button>
+
+          {images.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goToPrevious();
+                }}
+                aria-label="Previous image"
+                className="absolute top-1/2 left-4 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
+              >
+                <ChevronLeft size={24} />
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goToNext();
+                }}
+                aria-label="Next image"
+                className="absolute top-1/2 right-4 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
+              >
+                <ChevronRight size={24} />
+              </button>
+            </>
+          )}
+
           <div className="relative h-full max-h-[85vh] w-full max-w-3xl">
             <Image
               src={selectedImage.url}
