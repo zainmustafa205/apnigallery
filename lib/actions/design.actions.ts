@@ -153,6 +153,63 @@ export async function saveDesign(input: SaveDesignInput): Promise<SaveDesignResu
   }
 }
 
+// Shared helper: cleans up every Cloudinary asset tied to a Design
+// (preview snapshot + each image element's own upload). Used by both
+// deleteDesign (single, user-triggered) and cleanupOrphanedDesigns (bulk, cron).
+async function destroyDesignCloudinaryAssets(design: {
+  previewImagePublicId: string | null;
+  elements: unknown;
+}) {
+  if (design.previewImagePublicId) {
+    await cloudinary.uploader.destroy(design.previewImagePublicId);
+  }
+
+  const elements = (design.elements as { type?: string; publicId?: string }[]) ?? [];
+  for (const el of elements) {
+    if (el?.type === "image" && el?.publicId) {
+      await cloudinary.uploader.destroy(el.publicId);
+    }
+  }
+}
+
+const ORPHANED_DESIGN_MAX_AGE_DAYS = 7;
+
+/**
+ * Deletes Design rows that are older than ORPHANED_DESIGN_MAX_AGE_DAYS and
+ * are not linked to any CartItem or OrderItem — i.e. designs the customer
+ * built (via Quick Fields or the Canvas) but never actually added to cart,
+ * or added and later removed. Cleans up their Cloudinary assets too.
+ * Intended to run on a schedule (see app/api/cron/cleanup-designs/route.ts).
+ */
+export async function cleanupOrphanedDesigns() {
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - ORPHANED_DESIGN_MAX_AGE_DAYS);
+
+  const orphaned = await prisma.design.findMany({
+    where: {
+      createdAt: { lt: cutoff },
+      cartItems: { none: {} },
+      orderItems: { none: {} },
+    },
+    select: { id: true, previewImagePublicId: true, elements: true },
+  });
+
+  let deletedCount = 0;
+
+  for (const design of orphaned) {
+    try {
+      await destroyDesignCloudinaryAssets(design);
+      await prisma.design.delete({ where: { id: design.id } });
+      deletedCount++;
+    } catch (error) {
+      console.error(`Failed to cleanup orphaned design ${design.id}:`, error);
+      // Ek design ka fail hona baaqi sabko block nahi karega.
+    }
+  }
+
+  return { success: true as const, deletedCount, totalFound: orphaned.length };
+}
+
 export async function getDesign(designId: string) {
   const design = await prisma.design.findUnique({
     where: { id: designId },
@@ -186,21 +243,8 @@ export async function deleteDesign(designId: string) {
   }
 
   try {
-    if (design.previewImagePublicId) {
-      await cloudinary.uploader.destroy(design.previewImagePublicId);
-    }
-
-    // Clean up every image element's own Cloudinary asset too — each
-    // uploaded image inside `elements` now carries its own publicId.
-    const elements = (design.elements as { type?: string; publicId?: string }[]) ?? [];
-    for (const el of elements) {
-      if (el?.type === "image" && el?.publicId) {
-        await cloudinary.uploader.destroy(el.publicId);
-      }
-    }
-
+    await destroyDesignCloudinaryAssets(design);
     await prisma.design.delete({ where: { id: designId } });
-
     return { success: true as const };
   } catch (error) {
     console.error("Delete design failed:", error);

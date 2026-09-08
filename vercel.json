@@ -4,5 +4,11 @@
       "main": false,
       "dev": true
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/cleanup-designs",
+      "schedule": "0 3 * * *"
+    }
+  ]
 }
