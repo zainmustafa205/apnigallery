@@ -168,7 +168,7 @@ export async function getDesign(designId: string) {
 export async function deleteDesign(designId: string) {
   const design = await prisma.design.findUnique({
     where: { id: designId },
-    select: { id: true, uploadedImagePublicId: true, previewImagePublicId: true },
+    select: { id: true, previewImagePublicId: true },
   });
 
   if (!design) {
@@ -176,10 +176,11 @@ export async function deleteDesign(designId: string) {
   }
 
   try {
-    // Cloudinary cleanup — dono images agar mojood hon
-    if (design.uploadedImagePublicId) {
-      await cloudinary.uploader.destroy(design.uploadedImagePublicId);
-    }
+    // NOTE: Individual image elements inside `elements` (Json array) are NOT
+    // cleaned up here — DesignElement currently stores only `url`, not the
+    // Cloudinary `publicId` needed to delete it. This is a known gap (orphaned
+    // Cloudinary images on design delete) — low priority given free-tier volume,
+    // but worth fixing later by storing publicId alongside url on image elements.
     if (design.previewImagePublicId) {
       await cloudinary.uploader.destroy(design.previewImagePublicId);
     }
