@@ -5,6 +5,7 @@ import Moveable from "react-moveable";
 import Image from "next/image";
 import type { DesignElement } from "@/lib/design-types";
 export type { DesignElement };
+import { Loader2 } from "lucide-react";
 
 interface MockupCanvasProps {
   mockupImageUrl: string | null;
@@ -24,6 +25,7 @@ export function MockupCanvas({
   const containerRef = useRef<HTMLDivElement>(null);
   const targetRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const resizeStartRef = useRef<{ height: number; fontSize: number } | null>(null);
+  const [aspectRatio, setAspectRatio] = useState(1); // default square jab tak image load na ho
 
   const selectedTarget = selectedId ? targetRefs.current[selectedId] : null;
   const selectedElement = elements.find((el) => el.id === selectedId) ?? null;
@@ -31,7 +33,8 @@ export function MockupCanvas({
   return (
     <div
       ref={containerRef}
-      className="relative mx-auto aspect-square w-full max-w-md overflow-hidden rounded-lg border border-black/10 bg-[color:var(--color-surface-alt)]"
+      className="relative mx-auto w-full max-w-md overflow-hidden rounded-lg border border-black/10 bg-[color:var(--color-surface-alt)]"
+      style={{ aspectRatio }}
       onClick={(e) => {
         if (e.target === containerRef.current) onSelect(null);
       }}
@@ -42,6 +45,12 @@ export function MockupCanvas({
           alt="Product mockup"
           fill
           className="pointer-events-none object-contain select-none"
+          onLoad={(e) => {
+            const img = e.currentTarget;
+            if (img.naturalWidth && img.naturalHeight) {
+              setAspectRatio(img.naturalWidth / img.naturalHeight);
+            }
+          }}
         />
       ) : (
         <div className="absolute inset-0 flex items-center justify-center text-sm text-gray-400">
@@ -84,12 +93,21 @@ export function MockupCanvas({
               {el.content}
             </span>
           ) : el.url ? (
-            <img
-              src={el.url}
-              alt="Design"
-              className="pointer-events-none h-full w-full object-fill select-none"
-              draggable={false}
-            />
+            <div className="relative h-full w-full">
+              <img
+                src={el.url}
+                alt="Design"
+                className={`pointer-events-none h-full w-full object-fill select-none ${
+                  el.uploading ? "opacity-60" : ""
+                }`}
+                draggable={false}
+              />
+              {el.uploading && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Loader2 size={22} className="animate-spin text-white drop-shadow-md" />
+                </div>
+              )}
+            </div>
           ) : null}
         </div>
       ))}

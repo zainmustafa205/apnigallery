@@ -13,4 +13,5 @@ export interface DesignElement {
   bold?: boolean;
   italic?: boolean;
   url?: string;
+  uploading?: boolean;
 }
