@@ -1,5 +1,6 @@
 "use client";
 
+import { SectionHeading } from "@/components/shared/section-heading";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { MockupCanvas, type DesignElement } from "@/components/customize/mockup-canvas";
@@ -315,9 +316,12 @@ export function OrderBuilder(props: OrderBuilderProps) {
 
   return (
     <div className={`mx-auto max-w-6xl px-4 py-8 ${CUSTOMIZE_FONT_CLASSNAMES}`}>
-      <h1 className="mb-6 text-xl font-bold text-[color:var(--color-text-dark)]">
-        Customize: {props.productName}
-      </h1>
+      <div className="mb-8">
+        <SectionHeading
+          title={`Customize Your ${props.productName}`}
+          subtitle="اپنی پسند سے ڈیزائن کریں"
+        />
+      </div>
 
       <input
         ref={fileInputRef}
