@@ -20,12 +20,13 @@ export function buildTextOnlyElements(text: string): DesignElement[] {
   ];
 }
 
-export function buildImageOnlyElements(url: string): DesignElement[] {
+export function buildImageOnlyElements(url: string, publicId: string): DesignElement[] {
   return [
     {
       id: crypto.randomUUID(),
       type: "image",
       url,
+      publicId,
       xPercent: 10,
       yPercent: 10,
       widthPercent: 80,
@@ -35,12 +36,17 @@ export function buildImageOnlyElements(url: string): DesignElement[] {
   ];
 }
 
-export function buildBothElements(text: string, imageUrl: string): DesignElement[] {
+export function buildBothElements(
+  text: string,
+  imageUrl: string,
+  imagePublicId: string
+): DesignElement[] {
   return [
     {
       id: crypto.randomUUID(),
       type: "image",
       url: imageUrl,
+      publicId: imagePublicId,
       xPercent: 15,
       yPercent: 8,
       widthPercent: 70,

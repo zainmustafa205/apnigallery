@@ -12,8 +12,12 @@ import VariantSelector from "@/components/product/variant-selector";
 import ProductDetailsAccordion from "@/components/product/product-details-accordion";
 import { CARE_INSTRUCTIONS, DELIVERY_INFO } from "@/lib/product-policy-content";
 import { CustomizeTips } from "@/components/customize/customize-tips";
-import { saveDesign, uploadDesignImage } from "@/lib/actions/design.actions";
 import { ShoppingCart, Zap, Minus, Plus, Check, MessageCircle } from "lucide-react";
+import {
+  saveDesign,
+  uploadDesignImage,
+  deleteDesignImage,
+} from "@/lib/actions/design.actions";
 
 interface Variant {
   id: string;
@@ -183,7 +187,14 @@ export function OrderBuilder(props: OrderBuilderProps) {
 
         setElements((prev) =>
           prev.map((el) =>
-            el.id === id ? { ...el, url: result.data.url, uploading: false } : el
+            el.id === id
+              ? {
+                  ...el,
+                  url: result.data.url,
+                  publicId: result.data.publicId,
+                  uploading: false,
+                }
+              : el
           )
         );
         URL.revokeObjectURL(localUrl);
@@ -198,6 +209,13 @@ export function OrderBuilder(props: OrderBuilderProps) {
 
   function handleDeleteSelected() {
     if (!selectedId) return;
+
+    const toDelete = elements.find((el) => el.id === selectedId);
+    if (toDelete?.type === "image" && toDelete.publicId && !toDelete.uploading) {
+      // Background cleanup — UI removal doesn't wait on this.
+      deleteDesignImage(toDelete.publicId).catch(() => {});
+    }
+
     setElements((prev) => prev.filter((el) => el.id !== selectedId));
     setSelectedId(null);
   }

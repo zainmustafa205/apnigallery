@@ -1,9 +1,13 @@
 // components/product/add-to-cart-panel.tsx
 "use client";
 
+import {
+  saveDesign,
+  uploadDesignImage,
+  deleteDesignImage,
+} from "@/lib/actions/design.actions";
 import { useState, useTransition, useRef } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import {
   ShoppingCart,
   Sparkles,
@@ -16,7 +20,6 @@ import {
   MessageCircle,
 } from "lucide-react";
 import { addToCart } from "@/lib/actions/cart.actions";
-import { saveDesign, uploadDesignImage } from "@/lib/actions/design.actions";
 import { useCart } from "@/components/providers/cart-provider";
 import VariantSelector from "@/components/product/variant-selector";
 import type { DesignElement } from "@/lib/design-types";
@@ -114,6 +117,12 @@ export default function AddToCartPanel({
     setIsUploadingImage(true);
     setDesignError(null);
 
+    // Agar customer pehle se koi image upload kr chuka hai aur ab nayi
+    // select kr raha hai, purani ko Cloudinary se cleanup kr dete hain.
+    if (uploadedImage) {
+      deleteDesignImage(uploadedImage.publicId).catch(() => {});
+    }
+
     const formData = new FormData();
     formData.append("file", file);
 
@@ -144,13 +153,16 @@ export default function AddToCartPanel({
 
     let elements: DesignElement[];
     if (hasText && hasImage) {
-      elements = buildBothElements(quickText.trim(), uploadedImage!.url);
+      elements = buildBothElements(
+        quickText.trim(),
+        uploadedImage!.url,
+        uploadedImage!.publicId
+      );
     } else if (hasText) {
       elements = buildTextOnlyElements(quickText.trim());
     } else if (hasImage) {
-      elements = buildImageOnlyElements(uploadedImage!.url);
+      elements = buildImageOnlyElements(uploadedImage!.url, uploadedImage!.publicId);
     } else {
-      // Should not happen — buttons are disabled until designRequirementsMet.
       return { ok: false, designId: null };
     }
 
