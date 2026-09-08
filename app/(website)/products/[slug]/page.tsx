@@ -121,16 +121,16 @@ export default async function ProductDetailPage({ params }: Props) {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
-        {/* Left: Gallery + Description/Care/Delivery */}
-        <div className="flex flex-col gap-6">
-          <ProductGallery images={product.images} productName={product.name} />
+      <SectionHeading title="Product Details" subtitle="پروڈکٹ کی مکمل تفصیل" />
 
-          <ProductDetailsAccordion sections={accordionSections} />
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-x-12 lg:gap-y-8">
+        {/* Gallery — mobile: 1st, desktop: top-left */}
+        <div className="order-1 lg:order-none lg:col-start-1 lg:row-start-1">
+          <ProductGallery images={product.images} productName={product.name} />
         </div>
 
-        {/* Right: Product Info + Purchase Actions */}
-        <div className="flex flex-col gap-5">
+        {/* Product Info + Purchase Actions — mobile: 2nd, desktop: top-right */}
+        <div className="order-2 flex flex-col gap-5 lg:order-none lg:col-start-2 lg:row-start-1">
           <div>
             <Link
               href={`/shop?category=${product.category.slug}`}
@@ -138,7 +138,7 @@ export default async function ProductDetailPage({ params }: Props) {
             >
               {product.category.name}
             </Link>
-            <h1 className="mt-1 text-2xl font-bold text-[var(--color-text-dark)] sm:text-3xl">
+            <h1 className="mt-1 text-2xl font-bold text-[var(--color-header-fg)] sm:text-3xl">
               {product.name}
             </h1>
           </div>
@@ -153,6 +153,11 @@ export default async function ProductDetailPage({ params }: Props) {
               basePrice={basePrice}
             />
           </div>
+        </div>
+
+        {/* Description/Care/Delivery Accordion — mobile: 3rd (last), desktop: left column, slightly right-shifted */}
+        <div className="order-3 lg:order-none lg:col-start-1 lg:row-start-2 lg:ml-6 xl:ml-17">
+          <ProductDetailsAccordion sections={accordionSections} />
         </div>
       </div>
 
