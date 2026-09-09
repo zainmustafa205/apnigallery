@@ -8,6 +8,7 @@ import {
   clearCartSessionId,
 } from "@/lib/cart-session";
 import { z } from "zod";
+import { deleteDesign } from "@/lib/actions/design.actions";
 
 /**
  * Fetches the current user's cart (logged-in via userId, or guest via sessionId cookie),
@@ -260,6 +261,12 @@ export async function updateCartItemQuantity(cartItemId: string, quantity: numbe
 /**
  * Removes a cart item, after verifying ownership (same check as above).
  */
+/**
+ * Removes a cart item, after verifying ownership (same check as above).
+ * If the item had a linked Design, that Design (and its Cloudinary assets)
+ * is deleted immediately too — the 7-day orphaned-design cron is only a
+ * backup for designs that never made it into a cart in the first place.
+ */
 export async function removeCartItem(cartItemId: string) {
   const cartItem = await prisma.cartItem.findUnique({
     where: { id: cartItemId },
@@ -276,6 +283,18 @@ export async function removeCartItem(cartItemId: string) {
   }
 
   await prisma.cartItem.delete({ where: { id: cartItemId } });
+
+  // Linked design ka cleanup — cart item delete ho chuka hai, isliye
+  // is step ka fail hona overall operation ko fail nahi karega.
+  if (cartItem.designId) {
+    const designResult = await deleteDesign(cartItem.designId);
+    if (!designResult.success) {
+      console.error(
+        `Cart item ${cartItemId} removed, but linked design ${cartItem.designId} cleanup failed:`,
+        designResult.error
+      );
+    }
+  }
 
   return { success: true };
 }
