@@ -16,15 +16,15 @@ type ReceiptData = {
   phone: string;
   paymentMethodLabel: string;
   orderStatus: string;
-  paymentStatus: string; // "NOT_SUBMITTED" | "PENDING" | "VERIFIED" | "REJECTED"
+  paymentStatus: string;
   items: ReceiptItem[];
   subtotal: number;
   advanceAmount: number;
   remainingAmount: number;
 };
 
-const WIDTH = 700;
-const PADDING = 40;
+const WIDTH = 480;
+const PADDING = 28;
 const BRAND_COLOR = "#4B1E6E";
 const ACCENT_COLOR = "#E6339E";
 const TEXT_DARK = "#2D1B3D";
@@ -54,21 +54,21 @@ function statusColor(status: string): string {
   if (status === "CONFIRMED" || status === "DELIVERED" || status === "VERIFIED")
     return GREEN;
   if (status === "CANCELLED" || status === "REJECTED") return RED;
-  return AMBER; // pending / processing / dispatched / not submitted
+  return AMBER;
 }
 
 function drawWatermark(ctx: CanvasRenderingContext2D, width: number, height: number) {
   ctx.save();
   ctx.globalAlpha = 0.06;
   ctx.fillStyle = BRAND_COLOR;
-  ctx.font = "bold 28px Arial";
+  ctx.font = "bold 22px Arial";
   ctx.translate(width / 2, height / 2);
   ctx.rotate(-Math.PI / 6);
 
   const text = "ApniGallery.com";
   const textWidth = ctx.measureText(text).width;
-  const stepX = textWidth + 60;
-  const stepY = 90;
+  const stepX = textWidth + 50;
+  const stepY = 80;
   const span = Math.max(width, height) * 1.5;
 
   for (let y = -span; y < span; y += stepY) {
@@ -82,7 +82,7 @@ function drawWatermark(ctx: CanvasRenderingContext2D, width: number, height: num
 
 export default function DownloadReceiptButton({ data }: { data: ReceiptData }) {
   function handleDownload() {
-    const height = 430 + data.items.length * 60;
+    const height = 400 + data.items.length * 56;
 
     const canvas = document.createElement("canvas");
     canvas.width = WIDTH;
@@ -98,41 +98,41 @@ export default function DownloadReceiptButton({ data }: { data: ReceiptData }) {
     let y = PADDING;
 
     // Header — "Apni" (dark) + "Gallery" (accent pink) + ".com" (dark)
-    ctx.font = "bold 26px Arial";
+    ctx.font = "bold 21px Arial";
     let x = PADDING;
 
     ctx.fillStyle = BRAND_COLOR;
-    ctx.fillText("Apni", x, y + 10);
+    ctx.fillText("Apni", x, y + 8);
     x += ctx.measureText("Apni").width;
 
     ctx.fillStyle = ACCENT_COLOR;
-    ctx.fillText("Gallery", x, y + 10);
+    ctx.fillText("Gallery", x, y + 8);
     x += ctx.measureText("Gallery").width;
 
     ctx.fillStyle = BRAND_COLOR;
-    ctx.fillText(".com", x, y + 10);
+    ctx.fillText(".com", x, y + 8);
 
     ctx.fillStyle = TEXT_MUTED;
-    ctx.font = "13px Arial";
-    ctx.fillText("Order Receipt", PADDING, y + 32);
+    ctx.font = "12px Arial";
+    ctx.fillText("Order Receipt", PADDING, y + 28);
 
-    y += 60;
+    y += 52;
     ctx.strokeStyle = LINE_COLOR;
     ctx.beginPath();
     ctx.moveTo(PADDING, y);
     ctx.lineTo(WIDTH - PADDING, y);
     ctx.stroke();
-    y += 30;
+    y += 26;
 
     const drawRow = (label: string, value: string, valueColor = TEXT_DARK) => {
       ctx.fillStyle = TEXT_MUTED;
-      ctx.font = "13px Arial";
+      ctx.font = "12px Arial";
       ctx.fillText(label, PADDING, y);
       ctx.fillStyle = valueColor;
-      ctx.font = "bold 14px Arial";
+      ctx.font = "bold 13px Arial";
       const textWidth = ctx.measureText(value).width;
       ctx.fillText(value, WIDTH - PADDING - textWidth, y);
-      y += 26;
+      y += 24;
     };
 
     drawRow("Order Number", data.orderNumber);
@@ -150,48 +150,48 @@ export default function DownloadReceiptButton({ data }: { data: ReceiptData }) {
       statusColor(data.paymentStatus)
     );
 
-    y += 10;
+    y += 8;
     ctx.beginPath();
     ctx.moveTo(PADDING, y);
     ctx.lineTo(WIDTH - PADDING, y);
     ctx.stroke();
-    y += 30;
+    y += 26;
 
     ctx.fillStyle = TEXT_DARK;
-    ctx.font = "bold 15px Arial";
+    ctx.font = "bold 13px Arial";
     ctx.fillText("Items", PADDING, y);
-    y += 25;
+    y += 22;
 
     for (const item of data.items) {
       ctx.fillStyle = TEXT_DARK;
-      ctx.font = "bold 14px Arial";
+      ctx.font = "bold 13px Arial";
       const title = item.variantLabel
         ? `${item.productName} (${item.variantLabel})`
         : item.productName;
       ctx.fillText(title, PADDING, y);
 
       ctx.fillStyle = TEXT_DARK;
-      ctx.font = "bold 14px Arial";
+      ctx.font = "bold 13px Arial";
       const lineTotalText = `Rs. ${item.lineTotal.toLocaleString()}`;
       const ltWidth = ctx.measureText(lineTotalText).width;
       ctx.fillText(lineTotalText, WIDTH - PADDING - ltWidth, y);
 
-      y += 20;
+      y += 18;
       ctx.fillStyle = TEXT_MUTED;
-      ctx.font = "12px Arial";
+      ctx.font = "11px Arial";
       ctx.fillText(
         `Qty: ${item.quantity}  x  Rs. ${item.unitPrice.toLocaleString()}`,
         PADDING,
         y
       );
-      y += 30;
+      y += 28;
     }
 
     ctx.beginPath();
     ctx.moveTo(PADDING, y);
     ctx.lineTo(WIDTH - PADDING, y);
     ctx.stroke();
-    y += 30;
+    y += 26;
 
     drawRow("Subtotal", `Rs. ${data.subtotal.toLocaleString()}`);
     drawRow(
@@ -201,14 +201,11 @@ export default function DownloadReceiptButton({ data }: { data: ReceiptData }) {
     );
     drawRow("Remaining (on delivery)", `Rs. ${data.remainingAmount.toLocaleString()}`);
 
-    y += 20;
+    y += 16;
     ctx.fillStyle = TEXT_MUTED;
-    ctx.font = "italic 12px Arial";
-    ctx.fillText(
-      "Printing shuru karne se pehle hum aapse WhatsApp/Call par design confirm karenge.",
-      PADDING,
-      y
-    );
+    ctx.font = "italic 10.5px Arial";
+    const footerText = "Printing se pehle hum WhatsApp/Call par design confirm karenge.";
+    ctx.fillText(footerText, PADDING, y);
 
     canvas.toBlob((blob) => {
       if (!blob) return;
