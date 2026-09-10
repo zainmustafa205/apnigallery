@@ -128,11 +128,6 @@ export default function CartItemRow({ item }: { item: CartItemWithAvailability }
             {variantLabel && (
               <p className="text-text-dark/60 text-xs leading-tight">{variantLabel}</p>
             )}
-            {item.design && (
-              <span className="bg-lavender text-primary mt-0.5 inline-block rounded-full px-1.5 py-0.5 text-[10px]">
-                Custom Design
-              </span>
-            )}
           </div>
 
           <div className="border-lavender flex w-fit items-center overflow-hidden rounded-md border">
@@ -156,7 +151,7 @@ export default function CartItemRow({ item }: { item: CartItemWithAvailability }
           </div>
         </div>
 
-        <div className="flex shrink-0 flex-col items-end justify-between">
+        <div className="flex shrink-0 flex-col items-end justify-between gap-1">
           <button
             onClick={handleRemove}
             disabled={isPending}
@@ -165,6 +160,13 @@ export default function CartItemRow({ item }: { item: CartItemWithAvailability }
           >
             <X className="h-4 w-4" />
           </button>
+
+          {item.design && (
+            <span className="bg-lavender text-primary rounded-full px-1.5 py-0.5 text-[10px] whitespace-nowrap">
+              Custom Design
+            </span>
+          )}
+
           <p className="text-text-dark text-sm font-semibold whitespace-nowrap">
             Rs. {lineTotal.toLocaleString()}
           </p>
