@@ -21,7 +21,7 @@ export default function CopyButton({ text, label }: { text: string; label?: stri
       type="button"
       onClick={handleCopy}
       aria-label={label ?? `Copy ${text}`}
-      className="text-text-dark/50 hover:text-primary inline-flex items-center gap-1 transition-colors"
+      className="text-text-dark/50 hover:text-primary inline-flex items-center gap-1 transition-all active:scale-90"
     >
       {copied ? (
         <>

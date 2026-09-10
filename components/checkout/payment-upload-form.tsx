@@ -93,7 +93,7 @@ export default function PaymentUploadForm({
         <option value="BANK_TRANSFER">Bank Transfer</option>
       </select>
 
-      <label className="border-lavender hover:bg-surface-alt flex cursor-pointer items-center gap-2 rounded-lg border border-dashed px-3 py-3 text-sm transition-colors">
+      <label className="border-primary-light/60 hover:border-primary hover:bg-lavender/30 flex cursor-pointer items-center gap-2 rounded-lg border-2 border-dashed px-3 py-3 text-sm transition-all active:scale-[0.98]">
         <Upload className="text-primary h-4 w-4 shrink-0" />
         <span className="text-text-dark/70 truncate">
           {file ? file.name : "Choose payment screenshot..."}
@@ -116,7 +116,7 @@ export default function PaymentUploadForm({
       <button
         type="submit"
         disabled={isPending || !file}
-        className="bg-primary hover:bg-primary-light rounded-xl px-6 py-2.5 font-medium text-white transition-colors disabled:opacity-50"
+        className="bg-primary hover:bg-primary-light rounded-xl px-6 py-2.5 font-medium text-white transition-all active:scale-95 disabled:opacity-50"
       >
         {isPending ? "Uploading..." : "Submit Screenshot"}
       </button>

@@ -1,6 +1,7 @@
 "use client";
 
-import { Download } from "lucide-react";
+import { useState } from "react";
+import { Download, Loader2 } from "lucide-react";
 
 type ReceiptItem = {
   productName: string;
@@ -81,153 +82,177 @@ function drawWatermark(ctx: CanvasRenderingContext2D, width: number, height: num
 }
 
 export default function DownloadReceiptButton({ data }: { data: ReceiptData }) {
+  const [isGenerating, setIsGenerating] = useState(false);
+
   function handleDownload() {
-    const height = 400 + data.items.length * 56;
+    setIsGenerating(true);
 
-    const canvas = document.createElement("canvas");
-    canvas.width = WIDTH;
-    canvas.height = height;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    // requestAnimationFrame se ek frame chhorte hain taake "Preparing..."
+    // state pehle paint ho jaye, phir canvas ka heavy kaam chale.
+    requestAnimationFrame(() => {
+      const height = 400 + data.items.length * 56;
 
-    ctx.fillStyle = "#FFFFFF";
-    ctx.fillRect(0, 0, WIDTH, height);
+      const canvas = document.createElement("canvas");
+      canvas.width = WIDTH;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        setIsGenerating(false);
+        return;
+      }
 
-    drawWatermark(ctx, WIDTH, height);
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillRect(0, 0, WIDTH, height);
 
-    let y = PADDING;
+      drawWatermark(ctx, WIDTH, height);
 
-    // Header — "Apni" (dark) + "Gallery" (accent pink) + ".com" (dark)
-    ctx.font = "bold 21px Arial";
-    let x = PADDING;
+      let y = PADDING;
 
-    ctx.fillStyle = BRAND_COLOR;
-    ctx.fillText("Apni", x, y + 8);
-    x += ctx.measureText("Apni").width;
+      ctx.font = "bold 21px Arial";
+      let x = PADDING;
 
-    ctx.fillStyle = ACCENT_COLOR;
-    ctx.fillText("Gallery", x, y + 8);
-    x += ctx.measureText("Gallery").width;
+      ctx.fillStyle = BRAND_COLOR;
+      ctx.fillText("Apni", x, y + 8);
+      x += ctx.measureText("Apni").width;
 
-    ctx.fillStyle = BRAND_COLOR;
-    ctx.fillText(".com", x, y + 8);
+      ctx.fillStyle = ACCENT_COLOR;
+      ctx.fillText("Gallery", x, y + 8);
+      x += ctx.measureText("Gallery").width;
 
-    ctx.fillStyle = TEXT_MUTED;
-    ctx.font = "12px Arial";
-    ctx.fillText("Order Receipt", PADDING, y + 28);
+      ctx.fillStyle = BRAND_COLOR;
+      ctx.fillText(".com", x, y + 8);
 
-    y += 52;
-    ctx.strokeStyle = LINE_COLOR;
-    ctx.beginPath();
-    ctx.moveTo(PADDING, y);
-    ctx.lineTo(WIDTH - PADDING, y);
-    ctx.stroke();
-    y += 26;
-
-    const drawRow = (label: string, value: string, valueColor = TEXT_DARK) => {
       ctx.fillStyle = TEXT_MUTED;
       ctx.font = "12px Arial";
-      ctx.fillText(label, PADDING, y);
-      ctx.fillStyle = valueColor;
-      ctx.font = "bold 13px Arial";
-      const textWidth = ctx.measureText(value).width;
-      ctx.fillText(value, WIDTH - PADDING - textWidth, y);
-      y += 24;
-    };
+      ctx.fillText("Order Receipt", PADDING, y + 28);
 
-    drawRow("Order Number", data.orderNumber);
-    drawRow("Tracking Code", data.trackingCode, ACCENT_COLOR);
-    drawRow("Phone", data.phone);
-    drawRow("Payment Method", data.paymentMethodLabel);
-    drawRow(
-      "Order Status",
-      ORDER_STATUS_LABELS[data.orderStatus] ?? data.orderStatus,
-      statusColor(data.orderStatus)
-    );
-    drawRow(
-      "Payment Status",
-      PAYMENT_STATUS_LABELS[data.paymentStatus] ?? data.paymentStatus,
-      statusColor(data.paymentStatus)
-    );
+      y += 52;
+      ctx.strokeStyle = LINE_COLOR;
+      ctx.beginPath();
+      ctx.moveTo(PADDING, y);
+      ctx.lineTo(WIDTH - PADDING, y);
+      ctx.stroke();
+      y += 26;
 
-    y += 8;
-    ctx.beginPath();
-    ctx.moveTo(PADDING, y);
-    ctx.lineTo(WIDTH - PADDING, y);
-    ctx.stroke();
-    y += 26;
+      const drawRow = (label: string, value: string, valueColor = TEXT_DARK) => {
+        ctx.fillStyle = TEXT_MUTED;
+        ctx.font = "12px Arial";
+        ctx.fillText(label, PADDING, y);
+        ctx.fillStyle = valueColor;
+        ctx.font = "bold 13px Arial";
+        const textWidth = ctx.measureText(value).width;
+        ctx.fillText(value, WIDTH - PADDING - textWidth, y);
+        y += 24;
+      };
 
-    ctx.fillStyle = TEXT_DARK;
-    ctx.font = "bold 13px Arial";
-    ctx.fillText("Items", PADDING, y);
-    y += 22;
+      drawRow("Order Number", data.orderNumber);
+      drawRow("Tracking Code", data.trackingCode, ACCENT_COLOR);
+      drawRow("Phone", data.phone);
+      drawRow("Payment Method", data.paymentMethodLabel);
+      drawRow(
+        "Order Status",
+        ORDER_STATUS_LABELS[data.orderStatus] ?? data.orderStatus,
+        statusColor(data.orderStatus)
+      );
+      drawRow(
+        "Payment Status",
+        PAYMENT_STATUS_LABELS[data.paymentStatus] ?? data.paymentStatus,
+        statusColor(data.paymentStatus)
+      );
 
-    for (const item of data.items) {
+      y += 8;
+      ctx.beginPath();
+      ctx.moveTo(PADDING, y);
+      ctx.lineTo(WIDTH - PADDING, y);
+      ctx.stroke();
+      y += 26;
+
       ctx.fillStyle = TEXT_DARK;
       ctx.font = "bold 13px Arial";
-      const title = item.variantLabel
-        ? `${item.productName} (${item.variantLabel})`
-        : item.productName;
-      ctx.fillText(title, PADDING, y);
+      ctx.fillText("Items", PADDING, y);
+      y += 22;
 
-      ctx.fillStyle = TEXT_DARK;
-      ctx.font = "bold 13px Arial";
-      const lineTotalText = `Rs. ${item.lineTotal.toLocaleString()}`;
-      const ltWidth = ctx.measureText(lineTotalText).width;
-      ctx.fillText(lineTotalText, WIDTH - PADDING - ltWidth, y);
+      for (const item of data.items) {
+        ctx.fillStyle = TEXT_DARK;
+        ctx.font = "bold 13px Arial";
+        const title = item.variantLabel
+          ? `${item.productName} (${item.variantLabel})`
+          : item.productName;
+        ctx.fillText(title, PADDING, y);
 
-      y += 18;
+        ctx.fillStyle = TEXT_DARK;
+        ctx.font = "bold 13px Arial";
+        const lineTotalText = `Rs. ${item.lineTotal.toLocaleString()}`;
+        const ltWidth = ctx.measureText(lineTotalText).width;
+        ctx.fillText(lineTotalText, WIDTH - PADDING - ltWidth, y);
+
+        y += 18;
+        ctx.fillStyle = TEXT_MUTED;
+        ctx.font = "11px Arial";
+        ctx.fillText(
+          `Qty: ${item.quantity}  x  Rs. ${item.unitPrice.toLocaleString()}`,
+          PADDING,
+          y
+        );
+        y += 28;
+      }
+
+      ctx.beginPath();
+      ctx.moveTo(PADDING, y);
+      ctx.lineTo(WIDTH - PADDING, y);
+      ctx.stroke();
+      y += 26;
+
+      drawRow("Subtotal", `Rs. ${data.subtotal.toLocaleString()}`);
+      drawRow(
+        "Advance Payable",
+        `Rs. ${data.advanceAmount.toLocaleString()}`,
+        ACCENT_COLOR
+      );
+      drawRow("Remaining (on delivery)", `Rs. ${data.remainingAmount.toLocaleString()}`);
+
+      y += 16;
       ctx.fillStyle = TEXT_MUTED;
-      ctx.font = "11px Arial";
+      ctx.font = "italic 10.5px Arial";
       ctx.fillText(
-        `Qty: ${item.quantity}  x  Rs. ${item.unitPrice.toLocaleString()}`,
+        "Printing se pehle hum WhatsApp/Call par design confirm karenge.",
         PADDING,
         y
       );
-      y += 28;
-    }
 
-    ctx.beginPath();
-    ctx.moveTo(PADDING, y);
-    ctx.lineTo(WIDTH - PADDING, y);
-    ctx.stroke();
-    y += 26;
-
-    drawRow("Subtotal", `Rs. ${data.subtotal.toLocaleString()}`);
-    drawRow(
-      "Advance Payable",
-      `Rs. ${data.advanceAmount.toLocaleString()}`,
-      ACCENT_COLOR
-    );
-    drawRow("Remaining (on delivery)", `Rs. ${data.remainingAmount.toLocaleString()}`);
-
-    y += 16;
-    ctx.fillStyle = TEXT_MUTED;
-    ctx.font = "italic 10.5px Arial";
-    const footerText = "Printing se pehle hum WhatsApp/Call par design confirm karenge.";
-    ctx.fillText(footerText, PADDING, y);
-
-    canvas.toBlob((blob) => {
-      if (!blob) return;
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `ApniGallery-Receipt-${data.orderNumber}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    }, "image/png");
+      canvas.toBlob((blob) => {
+        setIsGenerating(false);
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `ApniGallery-Receipt-${data.orderNumber}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, "image/png");
+    });
   }
 
   return (
     <button
       type="button"
       onClick={handleDownload}
-      className="text-primary hover:text-primary-light flex items-center gap-2 text-sm transition-colors"
+      disabled={isGenerating}
+      className="text-primary hover:text-primary-light flex items-center gap-2 text-sm transition-all active:scale-95 disabled:opacity-60"
     >
-      <Download className="h-4 w-4" />
-      Download Receipt
+      {isGenerating ? (
+        <>
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Preparing...
+        </>
+      ) : (
+        <>
+          <Download className="h-4 w-4" />
+          Download Receipt
+        </>
+      )}
     </button>
   );
 }
