@@ -8,17 +8,17 @@ export default function CartSummary({
   hasUnavailableItem: boolean;
 }) {
   return (
-    <div className="sticky top-24 rounded-xl border border-[--color-lavender] bg-[--color-surface] p-5">
-      <h2 className="mb-4 font-semibold text-[--color-text-dark]">Order Summary</h2>
+    <div className="border-lavender bg-surface sticky top-24 rounded-xl border p-5">
+      <h2 className="text-text-dark mb-4 font-semibold">Order Summary</h2>
 
-      <div className="mb-2 flex items-center justify-between text-sm text-[--color-text-dark]/70">
+      <div className="text-text-dark/70 mb-2 flex items-center justify-between text-sm">
         <span>Subtotal</span>
-        <span className="font-medium text-[--color-text-dark]">
+        <span className="text-text-dark font-medium">
           Rs. {subtotal.toLocaleString()}
         </span>
       </div>
 
-      <p className="mb-4 text-xs text-[--color-text-dark]/50">
+      <p className="text-text-dark/50 mb-4 text-xs">
         Advance amount aur delivery details checkout par calculate hongi.
       </p>
 
@@ -26,7 +26,7 @@ export default function CartSummary({
         <>
           <button
             disabled
-            className="w-full cursor-not-allowed rounded-xl bg-[--color-lavender] px-6 py-3 font-medium text-[--color-text-dark]/40"
+            className="bg-lavender text-text-dark/40 w-full cursor-not-allowed rounded-xl px-6 py-3 font-medium"
           >
             Proceed to Checkout
           </button>
@@ -37,7 +37,7 @@ export default function CartSummary({
       ) : (
         <Link
           href="/checkout"
-          className="block w-full rounded-xl bg-[--color-primary] px-6 py-3 text-center font-medium text-white transition-colors hover:bg-[--color-primary-light]"
+          className="bg-primary hover:bg-primary-light block w-full rounded-xl px-6 py-3 text-center font-medium text-white transition-colors"
         >
           Proceed to Checkout
         </Link>

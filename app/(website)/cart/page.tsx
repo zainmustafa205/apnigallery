@@ -1,9 +1,9 @@
 import { getCart } from "@/lib/actions/cart.actions";
 import { SectionHeading } from "@/components/shared/section-heading";
 import CartItemRow from "@/components/cart/cart-item-row";
+import CartSummary from "@/components/cart/cart-summary";
 import Link from "next/link";
 import { ShoppingBag } from "lucide-react";
-import CartSummary from "@/components/cart/cart-summary";
 
 export default async function CartPage() {
   const cart = await getCart();
@@ -11,16 +11,16 @@ export default async function CartPage() {
   if (!cart || cart.items.length === 0) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-16 text-center sm:py-24">
-        <ShoppingBag className="mx-auto mb-4 h-14 w-14 text-[--color-primary-light]" />
-        <h1 className="mb-2 text-xl font-bold text-[--color-text-dark] sm:text-2xl">
+        <ShoppingBag className="text-primary-light mx-auto mb-4 h-14 w-14" />
+        <h1 className="text-text-dark mb-2 text-xl font-bold sm:text-2xl">
           Your cart is empty
         </h1>
-        <p className="mb-6 text-sm text-[--color-text-dark]/70">
+        <p className="text-text-dark/70 mb-6 text-sm">
           آپ کی ٹوکری خالی ہے — چلیں کچھ خریدتے ہیں
         </p>
         <Link
           href="/shop"
-          className="inline-block rounded-xl bg-[--color-primary] px-6 py-3 font-medium text-white transition-colors hover:bg-[--color-primary-light]"
+          className="bg-primary hover:bg-primary-light inline-block rounded-xl px-6 py-3 font-medium text-white transition-colors"
         >
           Browse Products
         </Link>
@@ -28,8 +28,6 @@ export default async function CartPage() {
     );
   }
 
-  // Har item ke liye availability yahin decide kr dete hain — checkout gate
-  // aur per-row warning dono isi single calculation ko reuse karenge.
   const itemsWithAvailability = cart.items.map((item) => {
     const isVariantActive = item.variant.isActive;
     const isProductActive = item.product.status === "ACTIVE";
