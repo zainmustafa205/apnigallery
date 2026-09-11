@@ -19,12 +19,12 @@ export function GalleryGrid({ items }: { items: GalleryItemData[] }) {
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
+      <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
         {items.map((item, index) => (
           <button
             key={item.id}
             onClick={() => setActiveIndex(index)}
-            className="group bg-lavender relative aspect-square overflow-hidden rounded-lg"
+            className="group bg-lavender relative aspect-square w-[calc(50%-0.375rem)] overflow-hidden rounded-lg sm:w-[calc(33.333%-0.667rem)] lg:w-[calc(25%-0.75rem)]"
           >
             <Image
               src={item.imageUrl}
