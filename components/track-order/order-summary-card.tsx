@@ -130,7 +130,7 @@ export default function OrderSummaryCard({ order }: { order: OrderCardData }) {
   };
 
   return (
-    <div className="border-lavender hover:border-primary relative rounded-xl border bg-white px-5 py-4 transition-all hover:shadow-sm">
+    <div className="border-lavender hover:border-primary bg-surface relative rounded-xl border px-5 py-4 transition-all hover:shadow-sm">
       <Link
         href={detailHref}
         className="absolute inset-0 rounded-xl"
