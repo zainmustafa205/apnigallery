@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Download, Loader2 } from "lucide-react";
+import { Download, Loader2, Check } from "lucide-react";
 
 type ReceiptItem = {
   productName: string;
@@ -83,6 +83,7 @@ function drawWatermark(ctx: CanvasRenderingContext2D, width: number, height: num
 
 export default function DownloadReceiptButton({ data }: { data: ReceiptData }) {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [justDownloaded, setJustDownloaded] = useState(false);
 
   function handleDownload() {
     setIsGenerating(true);
@@ -231,6 +232,9 @@ export default function DownloadReceiptButton({ data }: { data: ReceiptData }) {
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
+
+        setJustDownloaded(true);
+        setTimeout(() => setJustDownloaded(false), 1500);
       }, "image/png");
     });
   }
@@ -240,17 +244,24 @@ export default function DownloadReceiptButton({ data }: { data: ReceiptData }) {
       type="button"
       onClick={handleDownload}
       disabled={isGenerating}
-      className="text-primary hover:text-primary-light flex items-center gap-2 text-sm transition-all active:scale-95 disabled:opacity-60"
+      className="text-primary hover:text-accent hover:bg-lavender -mx-2 -my-1 flex items-center gap-2 rounded-md px-2 py-1 text-sm transition-colors active:scale-90 disabled:opacity-60"
     >
       {isGenerating ? (
         <>
           <Loader2 className="h-4 w-4 animate-spin" />
-          Preparing...
+          <span className="hidden sm:inline">Preparing...</span>
+        </>
+      ) : justDownloaded ? (
+        <>
+          <Check className="h-4 w-4 text-green-600" />
+          <span className="text-green-600">Downloaded</span>
         </>
       ) : (
         <>
           <Download className="h-4 w-4" />
-          Download Receipt
+          <span>
+            <span className="hidden sm:inline">Download </span>Receipt
+          </span>
         </>
       )}
     </button>
