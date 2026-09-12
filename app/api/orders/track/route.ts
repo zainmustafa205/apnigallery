@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
         },
       },
       payments: {
+        where: { type: { in: ["ADVANCE", "FULL"] } },
         orderBy: { submittedAt: "desc" },
         select: { status: true, type: true, amount: true, submittedAt: true },
       },
@@ -47,6 +48,9 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({
     success: true,
     data: {
+      id: order.id, // ← add
+      trackingCode: order.trackingCode, // ← add
+      phone: order.address.phone, // ← add
       orderNumber: order.orderNumber,
       status: order.status,
       paymentMethod: order.paymentMethod,
@@ -64,6 +68,7 @@ export async function GET(request: NextRequest) {
           material: item.variant.material,
         },
         quantity: item.quantity,
+        unitPrice: item.unitPrice.toString(), // ← add
         lineTotal: item.lineTotal.toString(),
       })),
       latestPayment: order.payments[0]
