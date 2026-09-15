@@ -285,7 +285,7 @@ export default function AboutPage() {
 
                   {index < PROCESS_STEPS.length - 1 && (
                     <div
-                      className="border-primary/25 mx-auto my-4 h-8 w-px border-l-2 border-dashed sm:h-10 lg:h-12"
+                      className="border-primary-light/60 mx-auto my-4 h-8 w-px border-l-2 border-dashed sm:h-10 lg:h-12"
                       aria-hidden
                     />
                   )}
@@ -298,20 +298,15 @@ export default function AboutPage() {
              CTA
               ====================================================== */}
         <ScrollReveal>
-          <section className="group border-primary/20 bg-surface/55 relative overflow-hidden rounded-[2rem] border px-5 py-10 shadow-xl backdrop-blur-xl sm:px-8 sm:py-14 lg:px-12 lg:py-16">
+          <section className="group bg-surface/55 relative overflow-hidden rounded-[2rem] border border-white/20 px-5 py-10 shadow-xl backdrop-blur-xl sm:px-8 sm:py-14 lg:px-12 lg:py-16">
             {/* Background decorative glow */}
             <div
               className="bg-primary/10 absolute -top-24 -right-20 h-56 w-56 rounded-full blur-3xl"
-              style={{
-                animation: "float-slow 7s ease-in-out infinite",
-              }}
+              style={{ animation: "float-slow 7s ease-in-out infinite" }}
             />
-
             <div
               className="bg-accent/10 absolute -bottom-24 -left-20 h-56 w-56 rounded-full blur-3xl"
-              style={{
-                animation: "float-slow 8s ease-in-out infinite 1s",
-              }}
+              style={{ animation: "float-slow 8s ease-in-out infinite 1s" }}
             />
 
             {/* Decorative dots */}
@@ -320,7 +315,6 @@ export default function AboutPage() {
                 <span key={index} className="bg-primary h-1.5 w-1.5 rounded-full" />
               ))}
             </div>
-
             <div className="absolute bottom-8 left-8 grid grid-cols-3 gap-1.5 opacity-20 sm:bottom-10 sm:left-12">
               {[...Array(9)].map((_, index) => (
                 <span key={index} className="bg-accent h-1.5 w-1.5 rounded-full" />
@@ -329,7 +323,7 @@ export default function AboutPage() {
 
             <div className="relative mx-auto max-w-3xl text-center">
               {/* Icon */}
-              <div className="border-primary/15 bg-primary/10 text-primary group-hover:bg-accent/10 group-hover:text-accent mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border shadow-sm transition-all duration-500 group-hover:scale-110 group-hover:rotate-3">
+              <div className="bg-primary/10 text-primary group-hover:bg-accent/10 group-hover:text-accent mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-white/25 shadow-sm transition-all duration-500 group-hover:scale-110 group-hover:rotate-3">
                 <Sparkles className="h-6 w-6" />
               </div>
 
@@ -344,7 +338,7 @@ export default function AboutPage() {
               </h2>
 
               {/* Description */}
-              <p className="text-text-dark/65 mx-auto mt-4 max-w-xl text-justify text-sm leading-6 sm:text-center sm:text-base sm:leading-7">
+              <p className="text-text-dark/65 mx-auto mt-4 max-w-xl text-sm leading-6 sm:text-center sm:text-base sm:leading-7">
                 Aapke paas idea hai? Hum usay ek real product mein badalne mein madad
                 karte hain. Mugs, shirts, bags aur bahut kuch — apni pasand ke design ke
                 sath.
