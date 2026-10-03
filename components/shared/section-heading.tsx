@@ -1,8 +1,10 @@
 export function SectionHeading({
   title,
+  mobileTitle,
   subtitle,
 }: {
   title: string;
+  mobileTitle?: string;
   subtitle?: string;
 }) {
   return (
@@ -13,7 +15,14 @@ export function SectionHeading({
         <span className="h-2.5 w-2.5 flex-shrink-0 [animation:gradient-shift_3s_ease_infinite,pulse-glow_2s_ease-in-out_infinite] rounded-full bg-gradient-to-r from-[var(--color-primary)] via-[var(--color-accent)] to-[var(--color-primary)] bg-[length:200%_auto]" />
 
         <h2 className="flex-shrink-0 [animation:gradient-shift_3s_ease_infinite] bg-gradient-to-r from-[var(--color-primary)] via-[var(--color-accent)] to-[var(--color-primary)] bg-[length:200%_auto] bg-clip-text px-2 text-xl font-bold tracking-tight whitespace-nowrap text-transparent sm:text-2xl">
-          {title}
+          {mobileTitle ? (
+            <>
+              <span className="sm:hidden">{mobileTitle}</span>
+              <span className="hidden sm:inline">{title}</span>
+            </>
+          ) : (
+            title
+          )}
         </h2>
 
         <span
