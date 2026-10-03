@@ -35,13 +35,13 @@ export default function ContactForm() {
     return (
       <div className="border-lavender bg-surface-alt flex flex-col items-center gap-3 rounded-xl border p-8 text-center">
         <CheckCircle2 className="h-10 w-10 text-green-600" />
-        <p className="text-text-dark font-medium">Message bhej diya gaya!</p>
-        <p className="text-text-dark/70 text-sm">Hum jald hi aapse rabta karenge.</p>
+        <p className="text-text-dark font-medium">Message sent!</p>
+        <p className="text-text-dark/70 text-sm">We&apos;ll get back to you shortly.</p>
         <button
           onClick={() => setSuccess(false)}
           className="text-primary mt-2 text-sm hover:underline"
         >
-          Naya message bhejein
+          Send another message
         </button>
       </div>
     );
@@ -49,7 +49,7 @@ export default function ContactForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <FloatingInput label="Pura Naam" value={name} onChange={setName} required />
+      <FloatingInput label="Full Name" value={name} onChange={setName} required />
       <FloatingInput
         label="Email"
         type="email"
@@ -78,7 +78,7 @@ export default function ContactForm() {
         disabled={isPending}
         className="bg-primary hover:bg-primary-light w-full rounded-lg px-5 py-3 text-sm font-medium text-white transition-colors disabled:opacity-60"
       >
-        {isPending ? "Bheja ja raha hai..." : "Message Bhejein"}
+        {isPending ? "Sending..." : "Send Message"}
       </button>
     </form>
   );

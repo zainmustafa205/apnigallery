@@ -1,8 +1,17 @@
-import { MessageCircle, Phone, Mail, Send, Clock, ArrowUpRight } from "lucide-react";
 import { SectionHeading } from "@/components/shared/section-heading";
 import ContactForm from "@/components/contact/contact-form";
+import Link from "next/link";
+import {
+  MessageCircle,
+  Phone,
+  Mail,
+  Send,
+  Clock,
+  ArrowUpRight,
+  HelpCircle,
+} from "lucide-react";
 
-const WHATSAPP_NUMBER = "923001234567"; // Chat 8 ke whatsapp-button.tsx wala hi number
+const WHATSAPP_NUMBER = "923001234567"; // same number as Chat 8's whatsapp-button.tsx
 const CONTACT_PHONE = "+92 300 1234567"; // placeholder
 const CONTACT_EMAIL = "support@apnigallery.com"; // placeholder
 
@@ -12,8 +21,8 @@ const CONTACT_LINKS = [
     external: true,
     icon: MessageCircle,
     label: "WhatsApp",
-    value: "Fastest response — chat karein",
-    tone: "bg-green-100 text-green-600",
+    value: "Fastest response — chat with us",
+    tone: "bg-green-500/10 text-green-600 group-hover:bg-green-500",
   },
   {
     href: `tel:${CONTACT_PHONE.replace(/\s/g, "")}`,
@@ -21,7 +30,7 @@ const CONTACT_LINKS = [
     icon: Phone,
     label: "Call Us",
     value: CONTACT_PHONE,
-    tone: "bg-primary/10 text-primary",
+    tone: "bg-primary/10 text-primary group-hover:bg-primary",
   },
   {
     href: `mailto:${CONTACT_EMAIL}`,
@@ -29,7 +38,7 @@ const CONTACT_LINKS = [
     icon: Mail,
     label: "Email",
     value: CONTACT_EMAIL,
-    tone: "bg-accent/10 text-accent",
+    tone: "bg-accent/10 text-accent group-hover:bg-accent",
   },
 ];
 
@@ -39,10 +48,6 @@ export default function ContactPage() {
       <div
         className="bg-primary/15 absolute top-10 -left-20 -z-10 h-64 w-64 rounded-full blur-3xl"
         style={{ animation: "float-slow 8s ease-in-out infinite" }}
-      />
-      <div
-        className="bg-accent/15 absolute top-[60%] -right-20 -z-10 h-72 w-72 rounded-full blur-3xl"
-        style={{ animation: "float-slow 9s ease-in-out infinite 1.5s" }}
       />
 
       <div className="mx-auto max-w-5xl space-y-10 px-4 pt-3 pb-10 sm:px-6 sm:pt-4 sm:pb-14">
@@ -59,26 +64,26 @@ export default function ContactPage() {
           </div>
           <SectionHeading title="Contact Us" subtitle="ہم سے رابطہ کریں" />
           <p className="text-text-dark/70 mx-auto mt-3 max-w-lg text-sm sm:text-base">
-            Koi sawal ho, order ke bare mein poochna ho, ya bulk order discuss karna ho —
-            hum yahan hain aapki madad ke liye.
+            Have a question, need help with an order, or want to discuss a bulk order —
+            we&apos;re here to help.
           </p>
         </section>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 lg:gap-8">
-          {/* Form — mobile pe pehle */}
+          {/* Form — first on mobile */}
           <div className="order-1 lg:order-2 lg:col-span-3">
             <div className="bg-surface/45 h-full rounded-[1.75rem] border border-white/30 p-6 shadow-xl backdrop-blur-xl sm:p-8">
               <h2 className="text-text-dark mb-1 text-xl font-semibold">
-                Message Bhejein
+                Send a Message
               </h2>
               <p className="text-text-dark/60 mb-5 text-sm">
-                Form fill karein, hum jald hi reply karenge.
+                Fill out the form and we&apos;ll get back to you soon.
               </p>
               <ContactForm />
             </div>
           </div>
 
-          {/* Direct contact panel — mobile pe baad mein */}
+          {/* Direct contact panel — second on mobile */}
           <div className="order-2 lg:order-1 lg:col-span-2">
             <div className="bg-surface/45 relative flex h-full flex-col justify-between overflow-hidden rounded-[1.75rem] border border-white/30 p-6 shadow-xl backdrop-blur-xl sm:p-7">
               <div
@@ -87,14 +92,12 @@ export default function ContactPage() {
               />
 
               <div className="relative">
-                <h2 className="text-text-dark text-xl font-semibold">
-                  Chalein Baat Karte Hain
-                </h2>
+                <h2 className="text-text-dark text-xl font-semibold">Let&apos;s Talk</h2>
                 <p className="text-text-dark/60 mt-1 text-sm">
-                  Jo tareeqa aapko suit kare, wahi choose karein.
+                  Choose whichever way works best for you.
                 </p>
 
-                <div className="mt-6 space-y-2">
+                <div className="mt-6 space-y-1.5">
                   {CONTACT_LINKS.map((link) => {
                     const Icon = link.icon;
                     return (
@@ -103,14 +106,18 @@ export default function ContactPage() {
                         href={link.href}
                         target={link.external ? "_blank" : undefined}
                         rel={link.external ? "noopener noreferrer" : undefined}
-                        className="group hover:bg-lavender/50 flex items-center gap-4 rounded-2xl p-3 transition-colors"
+                        className="group hover:bg-lavender/50 flex items-center gap-3 rounded-xl p-2.5 transition-colors sm:gap-4 sm:p-3"
                       >
-                        <span className="from-primary/10 to-accent/10 text-primary group-hover:from-primary group-hover:to-accent flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br transition-all duration-300 group-hover:text-white group-hover:shadow-md">
-                          <Icon className="h-5 w-5" />
+                        <span
+                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg shadow-sm transition-all duration-300 group-hover:text-white group-hover:shadow-md sm:h-11 sm:w-11 ${link.tone}`}
+                        >
+                          <Icon className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
                         </span>
                         <div className="min-w-0 flex-1">
-                          <p className="text-text-dark font-medium">{link.label}</p>
-                          <p className="text-text-dark/70 truncate text-sm">
+                          <p className="text-text-dark text-sm font-medium sm:text-base">
+                            {link.label}
+                          </p>
+                          <p className="text-text-dark/70 text-xs leading-snug sm:text-sm">
                             {link.value}
                           </p>
                         </div>
@@ -122,7 +129,6 @@ export default function ContactPage() {
               </div>
 
               <div className="border-primary/25 bg-lavender/15 relative mt-6 flex items-center gap-3 rounded-2xl border p-4">
-                {" "}
                 <span className="bg-primary/10 text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
                   <Clock className="h-5 w-5" />
                 </span>
@@ -134,6 +140,28 @@ export default function ContactPage() {
             </div>
           </div>
         </div>
+
+        <section className="border-primary/15 bg-surface/45 relative flex flex-col items-center gap-3 overflow-hidden rounded-2xl border p-6 text-center shadow-md backdrop-blur-xl sm:flex-row sm:justify-between sm:text-left">
+          <div
+            className="bg-primary/10 absolute -top-10 -right-10 h-32 w-32 rounded-full blur-2xl"
+            aria-hidden
+          />
+          <div className="relative">
+            <p className="text-text-dark font-medium">
+              Someone may have asked this already
+            </p>
+            <p className="text-text-dark/60 text-sm">
+              Your answer might already be in our FAQs.
+            </p>
+          </div>
+          <Link
+            href="/faq"
+            className="bg-primary hover:bg-primary-light relative inline-flex shrink-0 items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors"
+          >
+            <HelpCircle className="h-4 w-4" />
+            View FAQs
+          </Link>
+        </section>
       </div>
     </main>
   );
