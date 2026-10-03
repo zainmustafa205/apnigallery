@@ -96,3 +96,47 @@ export function FloatingSelect({
     </div>
   );
 }
+
+type FloatingTextareaProps = {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  required?: boolean;
+  rows?: number;
+  className?: string;
+};
+
+export function FloatingTextarea({
+  label,
+  value,
+  onChange,
+  required = false,
+  rows = 5,
+  className = "",
+}: FloatingTextareaProps) {
+  const [focused, setFocused] = useState(false);
+  const floated = focused || value.length > 0;
+
+  return (
+    <div className={`relative ${className}`}>
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        required={required}
+        rows={rows}
+        className="border-lavender bg-surface focus:ring-primary-light w-full resize-none rounded-lg border px-3 pt-4 pb-1.5 text-sm focus:ring-2 focus:outline-none"
+      />
+      <label
+        className={`bg-surface pointer-events-none absolute left-3 px-1 transition-all duration-150 ${
+          floated
+            ? "text-primary top-0 -translate-y-1/2 text-[10px]"
+            : "text-text-dark/50 top-4 text-sm"
+        }`}
+      >
+        {label}
+      </label>
+    </div>
+  );
+}
